@@ -53,6 +53,8 @@ endif()
 # ================================ GOOGLETEST END =======================================
 
 add_executable(unittesting include/stream.h
+                           include/stream_visitors.h
+                           include/detail/stream.h
                            tests/empty.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 

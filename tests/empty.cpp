@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <stream.h>
+#include <detail/visitor.h>
 
 using namespace stream::detail;
 
@@ -22,6 +23,7 @@ TEST(A, 2)
     stream::Stream<int, decltype(lambda)> stream(::std::move(lambda));
 
     auto iter = stream.begin();
+    std::cout << *iter << std::endl;
 }
 
 TEST(A, 3)
@@ -85,4 +87,9 @@ TEST(A, 7)
     {
         std::cout << val << std::endl;
     }
+}
+
+TEST(A, 8)
+{
+
 }
