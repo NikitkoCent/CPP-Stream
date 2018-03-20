@@ -56,7 +56,7 @@ add_executable(unittesting include/stream.h
                            include/stream_visitors.h
                            include/detail/stream.h
                            include/detail/utility.h
-                           include/detail/visitor.h
+                           include/visitor.h
                            tests/empty.cpp include/detail/lazy_invoker.h)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 

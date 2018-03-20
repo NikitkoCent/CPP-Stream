@@ -10,7 +10,7 @@
 namespace stream
 {
     template<typename T, typename Source>
-    struct Stream : public detail::Stream<void, Stream<T, Source>, T, Source>
+    struct Stream : detail::Stream<void, Stream<T, Source>, T, Source>
     {
         using detail::Stream<void, Stream<T, Source>, T, Source>::Stream;
     };
