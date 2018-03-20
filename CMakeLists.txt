@@ -55,13 +55,15 @@ endif()
 add_executable(unittesting include/stream.h
                            include/stream_visitors.h
                            include/detail/stream.h
-                           tests/empty.cpp)
+                           include/detail/utility.h
+                           include/detail/visitor.h
+                           tests/empty.cpp include/detail/lazy_invoker.h)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)
 
 # ================================= TEST COVERAGE =======================================
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#[[if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(${cmake-modules_SOURCE_DIR}/CodeCoverage.cmake)
 
     if (CMAKE_CXX_FLAGS_COVERAGE)
@@ -70,7 +72,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
                                   EXECUTABLE ctest
                                   DEPENDENCIES unittesting)
     endif()
-endif()
+endif()]]
 # ===============================  END TEST COVERAGE ====================================
 
 MESSAGE("Build type : ${CMAKE_BUILD_TYPE}")

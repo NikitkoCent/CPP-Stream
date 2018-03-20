@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stream.h>
 #include <detail/visitor.h>
+#include <detail/lazy_invoker.h>
 
 using namespace stream::detail;
 
@@ -91,5 +92,13 @@ TEST(A, 7)
 
 TEST(A, 8)
 {
+    auto l1 = [](){ std::cout << __func__ << std::endl; return 10; };
+    auto l2 = [](){ std::cout << __func__ << std::endl; };
 
+    LazyInvoker<decltype(l1)>{l1};
+    LazyInvoker<decltype(l2)>{l2};
+
+    int a = LazyInvoker<decltype(l1)>{l1};
+
+    ASSERT_EQ(a, 10);
 }
