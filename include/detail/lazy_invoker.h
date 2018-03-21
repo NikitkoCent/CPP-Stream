@@ -3,7 +3,6 @@
 
 #include "utility.h"
 #include <type_traits>  // ::std::decay_t
-#include <tuple>        // ::std::tuple, ::std::apply
 #include <utility>      // ::std::forward, ::std::move
 #include <functional>   // ::std::bad_function_call
 #include <memory>       // ::std::addressof
@@ -20,13 +19,17 @@ namespace stream
 
     namespace detail
     {
-        template<typename Callable, typename... Params>
+        template<typename, typename>
+        class StreamBase;
+
+
+        template<typename Callable>
         class LazyInvoker
         {
         public:
-            template<typename F, typename... Args>
-            LazyInvoker(F &&callable, Args&&... args)
-                : callable(::std::forward<F>(callable)), args(::std::forward<Args>(args)...), isEmpty(false)
+            template<typename F>
+            LazyInvoker(F &&callable)
+                : callable(::std::forward<F>(callable)), isEmpty(false)
             {}
 
 
@@ -39,7 +42,7 @@ namespace stream
             }
 
 
-            operator InvokeResultT<Callable&, Params...>()
+            operator InvokeResultT<Callable&>()
             {
                 return invoke();
             }
@@ -48,19 +51,30 @@ namespace stream
             template<typename Visitor>
             auto operator|(Visitor &&visitor)
             {
-                auto lambda = [now = ::std::move(*this), visitor = ::std::forward<Visitor>(visitor)]() mutable {
-                    if constexpr (::std::is_same<void, InvokeResultT<Callable&, Params...> >::value)
-                    {
-                        now.invoke();
-                        return visitor();
-                    }
-                    else
-                    {
-                        return visitor(now.invoke());
-                    }
-                };
+                if constexpr (detail::IsInvokable<Visitor&, decltype(invoke())>::value)
+                {
+                    using ReturnType = detail::InvokeResultT<Visitor&, decltype(invoke())>;
 
-                return LazyInvoker<decltype(lambda)>(::std::move(lambda));
+                    auto lambda = [now = ::std::move(*this), visitor = ::std::forward<Visitor>(visitor)]() mutable
+                        -> ReturnType {
+                        return visitor(now.invoke());
+                    };
+
+                    return LazyInvoker<decltype(lambda)>(::std::move(lambda));
+                }
+                else
+                {
+                    static_assert(detail::IsInvokable<Visitor&>::value, "Invalid visitor type");
+                    using ReturnType = detail::InvokeResultT<Visitor&>;
+
+                    auto lambda = [now = ::std::move(*this), visitor = ::std::forward<Visitor>(visitor)]() mutable
+                        -> ReturnType {
+                        (void)now.invoke();
+                        return visitor();
+                    };
+
+                    return LazyInvoker<decltype(lambda)>(::std::move(lambda));
+                }
             };
 
 
@@ -68,12 +82,14 @@ namespace stream
             template<typename, typename>
             friend struct stream::Stream;
 
-            template<typename, typename...>
+            template<typename>
             friend class LazyInvoker;
+
+            template<typename, typename>
+            friend class StreamBase;
 
 
             ::std::decay_t<Callable> callable;
-            ::std::tuple<Params...> args;
             bool isEmpty;
 
 
@@ -81,7 +97,7 @@ namespace stream
             LazyInvoker& operator=(const LazyInvoker &) = delete;
 
             LazyInvoker(LazyInvoker &&src)
-                : callable(::std::move(src.callable)), args(::std::move(src.args)), isEmpty(src.isEmpty)
+                : callable(::std::move(src.callable)), isEmpty(src.isEmpty)
             {
                 src.isEmpty = true;
             }
@@ -92,7 +108,6 @@ namespace stream
                 {
                     isEmpty = right.isEmpty;
                     right.isEmpty = true;
-                    args = ::std::move(right.args);
                     callable = ::std::move(right.callable);
                 }
 
@@ -100,7 +115,7 @@ namespace stream
             }
 
 
-            InvokeResultT<Callable&, Params...> invoke()
+            InvokeResultT<Callable&> invoke()
             {
                 if (isEmpty)
                 {
@@ -108,7 +123,7 @@ namespace stream
                 }
 
                 isEmpty = true;
-                return ::std::apply(callable, ::std::move(args));
+                return callable();
             }
         };
     }

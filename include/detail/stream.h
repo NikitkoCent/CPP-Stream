@@ -2,6 +2,7 @@
 #define CPP_STREAM_STREAM_DETAIL_STREAM_H
 
 #include "utility.h"        // VoidT, InvokeResultT
+#include "lazy_invoker.h"   // LazyInvoker
 #include <type_traits>      // ::std::enable_if_t, ::std::is_base_of, ::std::remove_reference_t, ::std::is_same
 #include <utility>          // ::std::forward, ::std::move, ::std::declval
 #include <functional>       // ::std::ref
@@ -20,15 +21,15 @@ namespace stream
             using value_type = T;
 
 
-            /*template<typename Callable>
-            auto operator|(Callable &&callable)
+            template<typename Callable>
+            auto operator|(Callable &&callable) const
             {
-                auto lambda = [self = ::std::ref(*static_cast<StreamImpl>(this)), callable = ::std::forward<Callable>(callable)]() mutable {
+                auto lambda = [self = ::std::cref(static_cast<const StreamImpl&>(*this)), callable = ::std::forward<Callable>(callable)]() mutable {
                     return callable(self.get());
                 };
 
-                return LazyCallable<decltype(lambda)>(::std::move(lambda));
-            }*/
+                return LazyInvoker<decltype(lambda)>(::std::move(lambda));
+            }
         };
 
 
@@ -76,7 +77,7 @@ namespace stream
 
         // generator
         template<typename StreamImpl, typename T, typename Generator>
-        class Stream<VoidT<InvokeResultT<Generator>>,
+        class Stream<VoidT<InvokeResultT<::std::decay_t<Generator>>>,
                      StreamImpl,
                      T,
                      Generator
@@ -130,10 +131,10 @@ namespace stream
                 friend class Stream<void, StreamImpl, T, Generator>;
 
 
-                ParentType *parent = nullptr;
+                const ParentType *parent = nullptr;
 
 
-                iterator(ParentType *parent)
+                iterator(const ParentType *parent)
                     : parent(parent)
                 {
                 }
@@ -147,18 +148,18 @@ namespace stream
             }
 
 
-            iterator begin()
+            iterator begin() const
             {
                 return { this };
             }
 
-            iterator end()
+            iterator end() const
             {
                 return endImpl<>();
             }
 
         private:
-            using GeneratorType = ::std::remove_reference_t<Generator>;
+            using GeneratorType = ::std::decay_t<Generator>;
 
 
             GeneratorType generator;
@@ -200,12 +201,12 @@ namespace stream
             }
 
 
-            auto begin()
+            auto begin() const
             {
                 return container.begin();
             }
 
-            auto end()
+            auto end() const
             {
                 return container.end();
             }

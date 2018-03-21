@@ -32,6 +32,10 @@ namespace stream
 
     template<typename T, typename... Ts>
     Stream(T&&, Ts&&...) -> Stream< ::std::remove_reference_t<T>, ::std::vector<::std::remove_reference_t<T>> >;
+
+
+    template<typename Generator>
+    Stream(Generator&&) -> Stream< detail::InvokeResultT<::std::decay_t<Generator>>, Generator >;
 }
 
 #endif //CPP_STREAM_STREAM_H
