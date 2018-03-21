@@ -5,9 +5,8 @@
 #include <iostream>
 #include <stream.h>
 #include <visitor.h>
-#include <detail/lazy_invoker.h>
-
-using namespace stream::detail;
+#include <stream_visitors.h>
+#include <cstdlib>
 
 TEST(A, 1)
 {
@@ -90,36 +89,33 @@ TEST(A, 7)
     }
 }
 
-TEST(A, 8)
+
+TEST(A, 11)
 {
-    auto l1 = [](){ std::cout << __func__ << std::endl; return 10; };
-    auto l2 = [](){ std::cout << __func__ << std::endl; };
-
-    LazyInvoker<decltype(l1)>{l1};
-    LazyInvoker<decltype(l2)>{l2};
-
-    int a = LazyInvoker<decltype(l1)>{l1};
-
-    ASSERT_EQ(a, 10);
+    stream::Stream{1, 2, 3, 4, 5} | stream::visitors::get(3) | stream::visitors::print_to(std::cout);
+    std::cout << std::endl;
 }
 
 
-TEST(A, 9)
+TEST(A, 12)
 {
-    auto l1 = [](){ std::cout << __func__ << std::endl; return 10; };
-
-    int a = LazyInvoker<decltype(l1)>{l1};
-
-    ASSERT_EQ(a, 10);
+    auto lambda = []{ return 0; };
+    stream::Visitor a{[]{ return 2132; }};
+    stream::Visitor b{lambda};
 }
 
-
-TEST(A, 10)
+TEST(A, 13)
 {
-    auto l1 = [](){ std::cout << __func__ << std::endl; return 10; };
-    auto l2 = [](){ std::cout << __func__ << std::endl; };
+    stream::Stream{1, 2, 3, 4, 5} | stream::visitors::map([](auto x){ return x * x; }) | stream::visitors::get(3) | stream::visitors::print_to(std::cout);
+    std::cout << std::endl;
+}
 
-    int a = LazyInvoker<decltype(l2)>{l2} | l2 | l1 + 5;
+TEST(A, 14)
+{
+    std::srand(23);
+    stream::Stream(std::rand) | stream::visitors::get(20) | stream::visitors::print_to(std::cout);
 
-    ASSERT_EQ(a, 10);
+    //using Type = ::std::iterator_traits<int(*)() noexcept>::iterator_category;
+
+    std::cout << std::endl;
 }
