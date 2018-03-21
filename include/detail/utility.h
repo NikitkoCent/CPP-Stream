@@ -2,6 +2,7 @@
 #define CPP_STREAM_DETAIL_UTILITY_H
 
 #include <type_traits>  // ::std::result_of_t, ::std::invoke_result_t
+#include <utility>      // ::std::declval
 
 namespace stream
 {
@@ -25,6 +26,20 @@ namespace stream
 
         template<typename... Args>
         using VoidT = typename MakeVoid<Args...>::Type;
+
+
+        template<typename AlwaysVoid, typename F, typename... Args>
+        struct IsInvokableImpl : ::std::false_type
+        {};
+
+        template<typename F, typename... Args>
+        struct IsInvokableImpl<VoidT<decltype(::std::declval<F>()(::std::declval<Args>()...))>, F, Args...> : ::std::true_type
+        {};
+
+
+        template<typename F, typename... Args>
+        struct IsInvokable : IsInvokableImpl<void, F, Args...>
+        {};
     }
 }
 
