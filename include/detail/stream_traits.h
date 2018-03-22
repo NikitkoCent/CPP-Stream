@@ -1,5 +1,5 @@
-#ifndef CPP_STREAM_DETAIL_STREAM_VISITORS_H
-#define CPP_STREAM_DETAIL_STREAM_VISITORS_H
+#ifndef CPP_STREAM_DETAIL_STREAM_TRAITS_H
+#define CPP_STREAM_DETAIL_STREAM_TRAITS_H
 
 #include "../stream.h"
 #include <type_traits>  // ::std::remove_reference_t
@@ -53,4 +53,4 @@ namespace stream
     }
 }
 
-#endif //CPP_STREAM_DETAIL_STREAM_VISITORS_H
+#endif //CPP_STREAM_DETAIL_STREAM_TRAITS_H

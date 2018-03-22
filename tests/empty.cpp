@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <functional>
 
+
 TEST(A, 1)
 {
     std::vector<int> v;
@@ -158,4 +159,14 @@ TEST(A, 20)
 {
     int n = stream::Stream(1, 2, 3, 4, 5) | stream::visitors::sum();
     ASSERT_EQ(n, 15);
+}
+
+TEST(A, 21)
+{
+    using namespace stream::visitors;
+    Stream{1, 2, 3} | map([](auto v) {std::cout << "MAP^2" << std::endl; return v*v;} )
+                    | map([](auto v) {std::cout << "MAP^3" << std::endl; return v*v*v;} )
+                    | print_to(std::cout);
+
+    std::cout << std::endl;
 }

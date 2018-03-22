@@ -2,7 +2,7 @@
 #define CPP_STREAM_STREAM_VISITORS_H
 
 #include "detail/utility.h"
-#include "detail/stream_visitors.h"
+#include "detail/stream_traits.h"
 #include "stream.h"     // stream::Stream
 #include "visitor.h"    // stream::Visitor
 #include <cstddef>      // ::std::size_t
@@ -210,7 +210,7 @@ namespace stream
         template<typename Filter>
         auto filter(Filter &&f)
         {
-            auto lambda = [f = ::std::forward<Filter>(f)](const auto &stream) {
+            auto lambda = [f = ::std::forward<Filter>(f)](const auto &stream) mutable {
                 using StreamValueType = detail::StreamValueT<decltype(stream)>;
 
                 ::std::vector<StreamValueType> result;
@@ -221,6 +221,17 @@ namespace stream
 
             return stream::Visitor<decltype(lambda)>(::std::move(lambda));
         }
+
+
+        /*auto group(::std::size_t n)
+        {
+            auto lambda = [n](const auto &stream) {
+                using StreamValueType = detail::StreamValueT<decltype(stream)>;
+
+            };
+
+            return stream::Visitor<decltype(lambda)>(::std::move(lambda));
+        }*/
     }
 }
 
