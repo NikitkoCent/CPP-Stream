@@ -36,7 +36,6 @@ namespace stream
         struct IsInvokableImpl<VoidT<decltype(::std::declval<F>()(::std::declval<Args>()...))>, F, Args...> : ::std::true_type
         {};
 
-
         template<typename F, typename... Args>
         struct IsInvokable : IsInvokableImpl<void, F, Args...>
         {};

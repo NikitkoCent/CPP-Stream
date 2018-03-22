@@ -2,10 +2,10 @@
 #define CPP_STREAM_STREAM_VISITORS_H
 
 #include "detail/utility.h"
+#include "detail/stream_visitors.h"
 #include "stream.h"
 #include "visitor.h"    // stream::Visitor
 #include <cstddef>      // ::std::size_t
-#include <type_traits>  // ::std::remove_reference_t
 #include <utility>      // ::std::move, ::std::forward
 #include <functional>
 #include <vector>
@@ -18,7 +18,7 @@ namespace stream
         auto get(::std::size_t n)
         {
             auto lambda = [n](auto &stream) mutable {
-                using StreamValueType = typename ::std::remove_reference_t<decltype(stream)>::value_type;
+                using StreamValueType = detail::StreamValueT<decltype(stream)>;
                 using Type = StreamValueType;
 
                 ::std::vector<Type> result;
@@ -40,20 +40,20 @@ namespace stream
         template<typename OStream>
         auto print_to(OStream &oStream, const char *delim = " ")
         {
-            auto lambda = [oStream = ::std::ref(oStream), delim](auto &stream) mutable -> OStream& {
+            auto lambda = [&oStream, delim](auto &stream) mutable -> OStream& {
                 auto iter = stream.begin();
                 if (iter == stream.end())
                 {
-                    return oStream.get();
+                    return oStream;
                 }
 
-                oStream.get() << *iter;
+                oStream << *iter;
                 for (++iter; iter != stream.end(); ++iter)
                 {
-                    oStream.get() << delim << *iter;
+                    oStream << delim << *iter;
                 }
 
-                return oStream.get();
+                return oStream;
             };
 
             return stream::Visitor<decltype(lambda)>(::std::move(lambda));
@@ -64,7 +64,7 @@ namespace stream
         auto map(Callable &&callable)
         {
             auto lambda = [f = ::std::forward<Callable>(callable)](auto &stream) mutable {
-                using StreamValueType = typename ::std::remove_reference_t<decltype(stream)>::value_type;
+                using StreamValueType = detail::StreamValueT<decltype(stream)>;
                 using Type = ::std::decay_t<detail::InvokeResultT<decltype(f), StreamValueType>>;
 
                 ::std::vector<Type> result;
@@ -77,6 +77,41 @@ namespace stream
             };
 
             return stream::Visitor<decltype(lambda)>(::std::move(lambda));
+        }
+
+
+        template<typename Accumulator, typename Identity>
+        auto reduce(Identity &&identity, Accumulator &&accumulator)
+        {
+            auto lambda = [accumulator = ::std::forward<Accumulator>(accumulator),
+                           identity = ::std::forward<Identity>(identity)](auto &stream) mutable {
+                using StreamValueType = detail::StreamValueT<decltype(stream)>;
+                using Type = detail::InvokeResultT<decltype(identity), const StreamValueType&>;
+
+                if (stream.begin() == stream.end())
+                {
+                    return Type{};
+                }
+                else
+                {
+                    auto iter = stream.begin();
+
+                    Type result = identity(*iter);
+                    while (++iter != stream.end())
+                    {
+                        result = accumulator(result, *iter);
+                    }
+                    return result;
+                }
+            };
+
+            return stream::Visitor<decltype(lambda)>(::std::move(lambda));
+        }
+
+        template<typename Accumulator>
+        auto reduce(Accumulator &&accumulator)
+        {
+            return reduce([](const auto &v) { return v; }, ::std::forward<Accumulator>(accumulator));
         }
     }
 }

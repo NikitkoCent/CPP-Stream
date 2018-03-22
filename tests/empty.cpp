@@ -7,6 +7,7 @@
 #include <visitor.h>
 #include <stream_visitors.h>
 #include <cstdlib>
+#include <functional>
 
 TEST(A, 1)
 {
@@ -124,7 +125,5 @@ TEST(A, 15)
 {
     std::vector<int> a{4,23, 5,6 ,7};
 
-    stream::Stream(a) | stream::visitors::print_to(std::cout);
-
-    std::cout << std::endl;
+    std::cout << (stream::Stream(a) | stream::visitors::reduce(::std::plus<>{})) << std::endl;
 }

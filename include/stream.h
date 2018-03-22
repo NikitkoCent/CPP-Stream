@@ -24,7 +24,8 @@ namespace stream
 
 
     template<typename Container>
-    Stream(Container&&) -> Stream<typename Container::value_type, Container>;
+    Stream(Container&&) -> Stream<typename ::std::remove_reference_t<Container>::value_type,
+                                  ::std::remove_reference_t<Container>>;
 
 
     template<typename T>
