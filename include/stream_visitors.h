@@ -3,12 +3,14 @@
 
 #include "detail/utility.h"
 #include "detail/stream_visitors.h"
-#include "stream.h"
+#include "stream.h"     // stream::Stream
 #include "visitor.h"    // stream::Visitor
 #include <cstddef>      // ::std::size_t
 #include <utility>      // ::std::move, ::std::forward
-#include <functional>
-#include <vector>
+#include <vector>       // ::std::vector
+#include <stdexcept>    // ::std::out_of_range
+#include <iterator>     // ::std::advance
+#include <type_traits>  // ::std::decay_t
 
 
 namespace stream
@@ -127,6 +129,36 @@ namespace stream
                 }
 
                 return result;
+            };
+
+            return stream::Visitor<decltype(lambda)>(::std::move(lambda));
+        }
+
+
+        auto nth(::std::size_t index)
+        {
+            auto lambda = [index](const auto &stream) {
+                auto iter = stream.begin();
+
+                if constexpr (detail::StreamFinitenessV<decltype(stream)>)
+                {
+                    while (index > 0)
+                    {
+                        if (iter == stream.end())
+                        {
+                            throw ::std::out_of_range{"Stream out of range"};
+                        }
+
+                        ++iter;
+                        --index;
+                    }
+                }
+                else
+                {
+                    ::std::advance(iter, index);
+                }
+
+                return *iter;
             };
 
             return stream::Visitor<decltype(lambda)>(::std::move(lambda));
