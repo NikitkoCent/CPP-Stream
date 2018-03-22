@@ -24,7 +24,9 @@ namespace stream
             template<typename Callable>
             auto operator|(Callable &&callable) const
             {
-                auto lambda = [self = ::std::cref(static_cast<const StreamImpl&>(*this)), callable = ::std::forward<Callable>(callable)]() mutable {
+                using ReturnType = InvokeResultT<Callable&, const StreamImpl&>;
+                auto lambda = [self = ::std::cref(static_cast<const StreamImpl&>(*this)), callable = ::std::forward<Callable>(callable)]() mutable
+                    -> ReturnType {
                     return callable(self.get());
                 };
 

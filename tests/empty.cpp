@@ -119,3 +119,12 @@ TEST(A, 14)
 
     std::cout << std::endl;
 }
+
+TEST(A, 15)
+{
+    std::vector<int> a{4,23, 5,6 ,7};
+
+    stream::Stream(a) | stream::visitors::print_to(std::cout);
+
+    std::cout << std::endl;
+}
