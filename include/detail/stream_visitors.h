@@ -16,6 +16,7 @@ namespace stream
         {
             using Type = typename stream::Stream<T1, T2>::value_type;
             using Source = T2;
+            using Iterator = typename stream::Stream<T1, T2>::const_iterator;
             static constexpr bool IsFinite = stream::Stream<T1, T2>::IsFinite;
         };
 

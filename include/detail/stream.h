@@ -37,13 +37,13 @@ namespace stream
 
             typename StreamImpl::const_iterator begin() const
             {
-                return static_cast<const StreamImpl *>(this)->begin();
+                return static_cast<const StreamImpl *>(this)->beginImpl();
             }
 
             typename StreamImpl::const_iterator end() const
             {
                 static_assert(IsFinite, "This stream is infinite");
-                return static_cast<const StreamImpl *>(this)->end();
+                return static_cast<const StreamImpl *>(this)->endImpl();
             }
         };
 
@@ -75,20 +75,23 @@ namespace stream
             {
             }
 
+        private:
+            friend class StreamBase<T, StreamImpl, true>;
 
-            const_iterator begin() const
+
+            const_iterator rangeBegin;
+            const_iterator rangeEnd;
+
+
+            const_iterator beginImpl() const
             {
                 return rangeBegin;
             }
 
-            const_iterator end() const
+            const_iterator endImpl() const
             {
                 return rangeEnd;
             }
-
-        private:
-            const_iterator rangeBegin;
-            const_iterator rangeEnd;
         };
 
 
@@ -121,6 +124,7 @@ namespace stream
 
                 const_iterator& operator++()
                 {
+                    (void)this->operator*();
                     return *this;
                 }
 
@@ -164,17 +168,20 @@ namespace stream
             {
             }
 
-
-            const_iterator begin() const
-            {
-                return { this };
-            }
-
         private:
+            friend class StreamBase<T, StreamImpl, false>;
+
+
             using GeneratorType = ::std::decay_t<Generator>;
 
 
             GeneratorType generator;
+
+
+            const_iterator beginImpl() const
+            {
+                return{this};
+            }
         };
 
 
@@ -207,6 +214,12 @@ namespace stream
             {
             }
 
+        private:
+            friend class StreamBase<T, StreamImpl, true>;
+
+
+            ::std::remove_reference_t<Container> container;
+
 
             const_iterator begin() const
             {
@@ -217,9 +230,6 @@ namespace stream
             {
                 return container.end();
             }
-
-        private:
-            ::std::remove_reference_t<Container> container;
         };
     }
 }
