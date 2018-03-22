@@ -9,37 +9,41 @@ namespace stream
     namespace detail
     {
         template<typename Stream>
-        struct StreamValue;
+        struct StreamTraits;
 
         template<typename T1, typename T2>
-        struct StreamValue<stream::Stream<T1, T2>>
+        struct StreamTraits<stream::Stream<T1, T2>>
         {
             using Type = typename stream::Stream<T1, T2>::value_type;
+            using Source = T2;
         };
 
         template<typename Stream>
-        struct StreamValue<const Stream> : StreamValue<Stream>
+        struct StreamTraits<const Stream> : StreamTraits<Stream>
         {};
 
         template<typename Stream>
-        struct StreamValue<Stream&> : StreamValue<Stream>
+        struct StreamTraits<Stream&> : StreamTraits<Stream>
         {};
 
         template<typename Stream>
-        struct StreamValue<Stream&&> : StreamValue<Stream>
+        struct StreamTraits<Stream&&> : StreamTraits<Stream>
         {};
 
         /*template<typename Stream>
-        struct StreamValue<Stream*> : StreamValue<Stream>
+        struct StreamTraits<Stream*> : StreamTraits<Stream>
         {};
 
         template<typename Stream>
-        struct StreamValue<Stream* const> : StreamValue<Stream>
+        struct StreamTraits<Stream* const> : StreamTraits<Stream>
         {};*/
 
 
         template<typename Stream>
-        using StreamValueT = typename StreamValue<Stream>::Type;
+        using StreamValueT = typename StreamTraits<Stream>::Type;
+
+        template<typename Stream>
+        using StreamSourceT = typename StreamTraits<Stream>::Source;
     }
 }
 

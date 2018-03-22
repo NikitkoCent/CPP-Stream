@@ -127,3 +127,10 @@ TEST(A, 15)
 
     std::cout << (stream::Stream(a) | stream::visitors::reduce(::std::plus<>{})) << std::endl;
 }
+
+TEST(A, 16)
+{
+    std::vector<double> v = stream::Stream{4.5 , 12.1, 0} | stream::visitors::to_vector();
+
+    ASSERT_THAT(v, ::testing::ElementsAre(4.5, 12.1, 0));
+}
