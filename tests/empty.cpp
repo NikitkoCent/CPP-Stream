@@ -134,3 +134,16 @@ TEST(A, 16)
 
     ASSERT_THAT(v, ::testing::ElementsAre(4.5, 12.1, 0));
 }
+
+TEST(A, 17)
+{
+    std::vector<int> a{4,23, 5,6 ,7};
+
+    std::cout << (stream::Stream(a) | stream::visitors::sum()) << std::endl;
+}
+
+TEST(A, 18)
+{
+    stream::Stream(1, 2, 3, 4 ,5, 6) | stream::visitors::skip(6) | stream::visitors::print_to(std::cout);
+    std::cout << std::endl;
+}

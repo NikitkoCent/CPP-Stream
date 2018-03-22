@@ -14,10 +14,11 @@ namespace stream
         template<typename T1, typename T2>
         struct StreamTraits<stream::Stream<T1, T2>>
         {
-            using Type = typename stream::Stream<T1, T2>::value_type;
+            using StreamType = stream::Stream<T1, T2>;
+            using ValueType = typename StreamType::value_type;
             using Source = T2;
-            using Iterator = typename stream::Stream<T1, T2>::const_iterator;
-            static constexpr bool IsFinite = stream::Stream<T1, T2>::IsFinite;
+            using Iterator = typename StreamType::const_iterator;
+            static constexpr bool IsFinite = StreamType::IsFinite;
         };
 
         template<typename Stream>
@@ -42,13 +43,13 @@ namespace stream
 
 
         template<typename Stream>
-        using StreamValueT = typename StreamTraits<Stream>::Type;
+        using StreamValueT = typename StreamTraits<Stream>::ValueType;
 
         template<typename Stream>
         using StreamSourceT = typename StreamTraits<Stream>::Source;
 
         template<typename Stream>
-        using StreamFinitenessV = StreamTraits<Stream>::IsFinite;
+        constexpr static bool StreamFinitenessV = StreamTraits<Stream>::IsFinite;
     }
 }
 

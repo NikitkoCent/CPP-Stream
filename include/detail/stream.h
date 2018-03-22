@@ -18,7 +18,7 @@ namespace stream
         class StreamBase
         {
         public:
-            using value_type = const T;
+            using value_type = T;
             static constexpr bool IsFinite = Finiteness;
 
 
@@ -35,12 +35,12 @@ namespace stream
             }
 
 
-            typename StreamImpl::const_iterator begin() const
+            auto begin() const
             {
                 return static_cast<const StreamImpl *>(this)->beginImpl();
             }
 
-            typename StreamImpl::const_iterator end() const
+            auto end() const
             {
                 static_assert(IsFinite, "This stream is infinite");
                 return static_cast<const StreamImpl *>(this)->endImpl();
@@ -142,7 +142,7 @@ namespace stream
 
                 const_iterator operator++(int)
                 {
-                    iterator result(*this);
+                    const_iterator result(*this);
                     ++(*this);
                     return result;
                 }
@@ -221,12 +221,12 @@ namespace stream
             ::std::remove_reference_t<Container> container;
 
 
-            const_iterator begin() const
+            const_iterator beginImpl() const
             {
                 return container.begin();
             }
 
-            const_iterator end() const
+            const_iterator endImpl() const
             {
                 return container.end();
             }

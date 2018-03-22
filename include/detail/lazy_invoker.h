@@ -19,7 +19,7 @@ namespace stream
 
     namespace detail
     {
-        template<typename, typename>
+        template<typename, typename, bool>
         class StreamBase;
 
 
@@ -85,7 +85,7 @@ namespace stream
             template<typename>
             friend class LazyInvoker;
 
-            template<typename, typename>
+            template<typename, typename, bool>
             friend class StreamBase;
 
 

@@ -11,6 +11,7 @@
 #include <stdexcept>    // ::std::out_of_range
 #include <iterator>     // ::std::advance
 #include <type_traits>  // ::std::decay_t
+#include <functional>   // ::std::plus
 
 
 namespace stream
@@ -137,7 +138,7 @@ namespace stream
 
         auto nth(::std::size_t index)
         {
-            auto lambda = [index](const auto &stream) {
+            auto lambda = [index](const auto &stream) mutable {
                 auto iter = stream.begin();
 
                 if constexpr (detail::StreamFinitenessV<decltype(stream)>)
@@ -159,6 +160,46 @@ namespace stream
                 }
 
                 return *iter;
+            };
+
+            return stream::Visitor<decltype(lambda)>(::std::move(lambda));
+        }
+
+
+        auto sum()
+        {
+            return reduce(::std::plus<>{});
+        }
+
+
+        auto skip(::std::size_t amount)
+        {
+            auto lambda = [amount](const auto &stream) mutable {
+                using StreamValueType = detail::StreamValueT<decltype(stream)>;
+
+                auto iter = stream.begin();
+                if constexpr (detail::StreamFinitenessV<decltype(stream)>)
+                {
+                    ::std::vector<StreamValueType> result;
+                    while (amount > 0)
+                    {
+                        if (iter == stream.end())
+                        {
+                            throw ::std::out_of_range{"Stream out of range"};
+                        }
+
+                        ++iter;
+                        --amount;
+                    }
+
+                    result.insert(result.cend(), iter, stream.end());
+                    return stream::Stream<StreamValueType, ::std::vector<StreamValueType>>(result);
+                }
+                else
+                {
+                    ::std::advance(iter, amount);
+                    return typename detail::StreamTraits<decltype(stream)>::StreamType{stream};
+                }
             };
 
             return stream::Visitor<decltype(lambda)>(::std::move(lambda));
