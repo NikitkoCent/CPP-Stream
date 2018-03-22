@@ -9,9 +9,10 @@
 #include <utility>      // ::std::move, ::std::forward
 #include <vector>       // ::std::vector
 #include <stdexcept>    // ::std::out_of_range
-#include <iterator>     // ::std::advance
+#include <iterator>     // ::std::advance, ::std::back_inserter
 #include <type_traits>  // ::std::decay_t
 #include <functional>   // ::std::plus
+#include <algorithm>    // ::std::copy
 
 
 namespace stream
@@ -193,13 +194,29 @@ namespace stream
                     }
 
                     result.insert(result.cend(), iter, stream.end());
-                    return stream::Stream<StreamValueType, ::std::vector<StreamValueType>>(result);
+                    return stream::Stream<StreamValueType, ::std::vector<StreamValueType>>(::std::move(result));
                 }
                 else
                 {
                     ::std::advance(iter, amount);
                     return typename detail::StreamTraits<decltype(stream)>::StreamType{stream};
                 }
+            };
+
+            return stream::Visitor<decltype(lambda)>(::std::move(lambda));
+        }
+
+
+        template<typename Filter>
+        auto filter(Filter &&f)
+        {
+            auto lambda = [f = ::std::forward<Filter>(f)](const auto &stream) {
+                using StreamValueType = detail::StreamValueT<decltype(stream)>;
+
+                ::std::vector<StreamValueType> result;
+                ::std::copy_if(stream.begin(), stream.end(), ::std::back_inserter(result), ::std::move(f));
+
+                return stream::Stream<StreamValueType, ::std::vector<StreamValueType>>(::std::move(result));
             };
 
             return stream::Visitor<decltype(lambda)>(::std::move(lambda));

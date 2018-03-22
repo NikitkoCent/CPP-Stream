@@ -147,3 +147,15 @@ TEST(A, 18)
     stream::Stream(1, 2, 3, 4 ,5, 6) | stream::visitors::skip(6) | stream::visitors::print_to(std::cout);
     std::cout << std::endl;
 }
+
+TEST(A, 19)
+{
+    stream::Stream{1, 2, 3, 4, 5} | stream::visitors::filter([](int x) {return x % 2 == 0;}) | stream::visitors::print_to(std::cout);
+    std::cout << std::endl;
+}
+
+TEST(A, 20)
+{
+    int n = stream::Stream(1, 2, 3, 4, 5) | stream::visitors::sum();
+    ASSERT_EQ(n, 15);
+}
