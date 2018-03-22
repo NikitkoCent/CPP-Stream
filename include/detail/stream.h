@@ -14,11 +14,12 @@ namespace stream
 {
     namespace detail
     {
-        template<typename T, typename StreamImpl>
+        template<typename T, typename StreamImpl, bool Finiteness>
         class StreamBase
         {
         public:
-            using value_type = T;
+            using value_type = const T;
+            static constexpr bool IsFinite = Finiteness;
 
 
             template<typename Callable>
@@ -31,6 +32,18 @@ namespace stream
                 };
 
                 return LazyInvoker<decltype(lambda)>(::std::move(lambda));
+            }
+
+
+            typename StreamImpl::const_iterator begin() const
+            {
+                return static_cast<const StreamImpl *>(this)->begin();
+            }
+
+            typename StreamImpl::const_iterator end() const
+            {
+                static_assert(IsFinite, "This stream is infinite");
+                return static_cast<const StreamImpl *>(this)->end();
             }
         };
 
@@ -45,10 +58,13 @@ namespace stream
                      StreamImpl,
                      T,
                      Iterator
-                    > : public StreamBase<T, StreamImpl>
+                    > : public StreamBase<T, StreamImpl, true>
         {
         public:
-            Stream(Iterator begin, Iterator end)
+            using const_iterator = Iterator;
+
+
+            Stream(const_iterator begin, const_iterator end)
                 : rangeBegin(begin), rangeEnd(end)
             {
             }
@@ -60,20 +76,19 @@ namespace stream
             }
 
 
-            Iterator begin() const
+            const_iterator begin() const
             {
                 return rangeBegin;
             }
 
-            Iterator end() const
+            const_iterator end() const
             {
                 return rangeEnd;
             }
 
-
         private:
-            Iterator rangeBegin;
-            Iterator rangeEnd;
+            const_iterator rangeBegin;
+            const_iterator rangeEnd;
         };
 
 
@@ -83,19 +98,19 @@ namespace stream
                      StreamImpl,
                      T,
                      Generator
-                    > : public StreamBase<T, StreamImpl>
+                    > : public StreamBase<T, StreamImpl, false>
         {
         public:
-            class iterator
+            class const_iterator
             {
             public:
                 using difference_type = ::std::ptrdiff_t;
-                using value_type = T;
+                using value_type = const T;
                 using pointer = value_type;
                 using reference = value_type;
 
 
-                iterator() = default;
+                const_iterator() = default;
 
 
                 reference operator*() const
@@ -104,24 +119,24 @@ namespace stream
                 };
 
 
-                iterator& operator++()
+                const_iterator& operator++()
                 {
                     return *this;
                 }
 
 
-                bool operator==(const iterator &right) const
+                bool operator==(const const_iterator &right) const
                 {
                     return parent == right.parent;
                 }
 
-                bool operator!=(const iterator &right) const
+                bool operator!=(const const_iterator &right) const
                 {
                     return !(*this == right);
                 }
 
 
-                iterator operator++(int)
+                const_iterator operator++(int)
                 {
                     iterator result(*this);
                     ++(*this);
@@ -136,7 +151,7 @@ namespace stream
                 const ParentType *parent = nullptr;
 
 
-                iterator(const ParentType *parent)
+                const_iterator(const ParentType *parent)
                     : parent(parent)
                 {
                 }
@@ -150,14 +165,9 @@ namespace stream
             }
 
 
-            iterator begin() const
+            const_iterator begin() const
             {
                 return { this };
-            }
-
-            iterator end() const
-            {
-                return endImpl<>();
             }
 
         private:
@@ -165,14 +175,6 @@ namespace stream
 
 
             GeneratorType generator;
-
-
-            template<typename... Args>
-            iterator endImpl()
-            {
-                static_assert(sizeof...(Args) > 0, "This stream is infinite");
-                return { this };
-            }
         };
 
 
@@ -183,9 +185,12 @@ namespace stream
                      StreamImpl,
                      T,
                      Container
-                    > : public StreamBase<T, StreamImpl>
+                    > : public StreamBase<T, StreamImpl, true>
         {
         public:
+            using const_iterator = typename Container::const_iterator;
+
+
             Stream(Container &&container)
                 : container(::std::move(container))
             {}
@@ -203,12 +208,12 @@ namespace stream
             }
 
 
-            auto begin() const
+            const_iterator begin() const
             {
                 return container.begin();
             }
 
-            auto end() const
+            const_iterator end() const
             {
                 return container.end();
             }

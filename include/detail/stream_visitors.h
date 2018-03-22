@@ -16,6 +16,7 @@ namespace stream
         {
             using Type = typename stream::Stream<T1, T2>::value_type;
             using Source = T2;
+            static constexpr bool IsFinite = stream::Stream<T1, T2>::IsFinite;
         };
 
         template<typename Stream>
@@ -44,6 +45,9 @@ namespace stream
 
         template<typename Stream>
         using StreamSourceT = typename StreamTraits<Stream>::Source;
+
+        template<typename Stream>
+        using StreamFinitenessV = StreamTraits<Stream>::IsFinite;
     }
 }
 
