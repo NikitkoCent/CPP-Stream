@@ -5,8 +5,7 @@
 #include "stream_traits.h"
 #include <type_traits>      // ::std::decay_t
 #include <utility>          // ::std::move
-#include <optional>
-#include <iterator>
+#include <optional>         // ::std::optional
 
 namespace stream
 {
@@ -30,7 +29,7 @@ namespace stream
                 auto next = stream.getNext();
                 if (next)
                 {
-                    return filter(::std::move(next));
+                    return filter(next.value());
                 }
                 else
                 {
