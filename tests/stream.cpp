@@ -17,6 +17,16 @@ TEST(DEDUCTION_GUIDES_CONTAINER, RREF)
     ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, std::list<std::string>>>::value));
 }
 
+TEST(DEDUCTION_GUIDES_CONTAINER, CONST_RREF)
+{
+    const std::list<std::string> c{"one", "two", "three"};
+
+    stream::Stream stream(std::move(c));
+
+    ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, const std::list<std::string>&>>::value));
+}
+
+
 
 TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST)
 {

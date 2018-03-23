@@ -7,6 +7,7 @@
 #include <utility>          // ::std::move, ::std::forward, ::std::declval
 #include <type_traits>      // ::std::enable_if_t, ::std::is_reference, ::std::is_const
 #include <initializer_list> // ::std::initializer_list
+#include <functional>       // ::std::reference_wrapper
 
 namespace stream
 {
@@ -61,15 +62,73 @@ namespace stream
 
 
             Container container;
-            typename ContainerTraits<Container>::Iterator iterator;
+            mutable typename ContainerTraits<Container>::Iterator iterator;
+            mutable bool iteratorInitialized;
 
+
+            ::std::optional<::std::reference_wrapper<T>> getNext()
+            {
+                if (isEndImpl())
+                {
+                    return { ::std::nullopt };
+                }
+
+                return ::std::cref(*iterator++);
+            }
 
             bool isEndImpl() const
             {
+                if (!iteratorInitialized)
+                {
+                    iterator = container.begin();
+                    iteratorInitialized = true;
+                }
+
                 return (iterator == container.end());
             }
         };
 
+
+        // Container cref
+        template<typename T, typename Container, typename StreamImpl>
+        class Stream<T, const Container&, StreamImpl, VoidT<::std::enable_if_t<ContainerTraits<Container>::IsContainer>>
+                    > : public StreamBase<T, true, StreamImpl>
+        {
+        public:
+            Stream(const Container &container)
+                : container(container), iterator(this->container.get().begin())
+            {}
+
+        private:
+            friend class StreamBase<T, true, StreamImpl>;
+
+
+            ::std::reference_wrapper<const Container> container;
+            mutable typename ContainerTraits<Container>::Iterator iterator;
+            mutable bool iteratorInitialized = false;
+
+
+            ::std::optional<::std::reference_wrapper<T>> getNext()
+            {
+                if (isEndImpl())
+                {
+                    return { ::std::nullopt };
+                }
+
+                return ::std::cref(*iterator++);
+            }
+
+            bool isEndImpl() const
+            {
+                if (!iteratorInitialized)
+                {
+                    iterator = container.get().begin();
+                    iteratorInitialized = true;
+                }
+
+                return (iterator == container.get().end());
+            }
+        };
     }
 }
 

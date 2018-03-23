@@ -22,6 +22,14 @@ namespace stream
 
     template<typename T>
     Stream(::std::initializer_list<T>) -> Stream<T>;
+
+
+    // Container cref guides
+    template<typename Container>
+    Stream(const Container &) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
+
+    template<typename Container>
+    Stream(const Container &&) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
 }
 
 #endif //CPP_STREAM_STREAMV2_H
