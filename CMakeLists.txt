@@ -59,7 +59,12 @@ add_executable(unittesting include/stream.h
                            include/visitor.h
                            include/detail/lazy_invoker.h
                            include/detail/stream_traits.h
-        tests/stream.cpp include/detail/stream_filter.h include/streamv2.h include/detail/streamv2.h include/detail/traits.h)
+                           include/detail/stream_filter.h
+                           include/streamv2.h
+                           include/detail/streamv2.h
+                           include/detail/traits.h
+                           include/detail/stream_base.h
+                           tests/stream.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)

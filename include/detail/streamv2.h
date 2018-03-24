@@ -1,8 +1,11 @@
 #ifndef CPP_STREAM_DETAIL_STREAMV2_H
 #define CPP_STREAM_DETAIL_STREAMV2_H
 
+#include "stream_base.h"
 #include "utility.h"        // VoidT
-#include "traits.h"         // IsContainer,
+#include "traits.h"         // IsContainer
+#include "stream_traits.h"
+#include "stream_filter.h"
 #include <optional>         // ::std::optional
 #include <utility>          // ::std::move, ::std::forward, ::std::declval
 #include <type_traits>      // ::std::enable_if_t, ::std::is_reference, ::std::is_const
@@ -14,29 +17,8 @@ namespace stream
 {
     namespace detail
     {
-        template<typename T, typename Source, typename StreamImpl, typename = void>
+        template<typename, typename, typename, typename = void>
         class Stream;
-
-
-        template<typename T, bool Finiteness, typename StreamImpl>
-        class StreamBase
-        {
-        public:
-            using Type = T;
-            static constexpr bool IsFinite = Finiteness;
-
-        private:
-            template<typename, typename, typename, typename>
-            friend class Stream;
-
-
-            bool isEnd() const
-            {
-                static_assert(IsFinite, "This stream is infinite");
-                return static_cast<const StreamImpl *>(this)->isEndImpl();
-            }
-        };
-
 
         // Container
         template<typename T, typename Container, typename StreamImpl>
@@ -60,18 +42,7 @@ namespace stream
                 initialize(::std::forward<Arg1>(arg1), ::std::forward<Args>(args)...);
             }
 
-        private:
-            friend class StreamBase<T, true, StreamImpl>;
-
-            template<typename, typename, typename, typename>
-            friend class Stream;
-
-
-            Container container;
-            mutable typename ContainerTraits<Container>::Iterator iterator;
-            mutable bool iteratorInitialized = false;
-
-
+        protected:
             ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
@@ -92,6 +63,11 @@ namespace stream
 
                 return (iterator == container.end());
             }
+
+        private:
+            Container container;
+            mutable typename ContainerTraits<Container>::Iterator iterator;
+            mutable bool iteratorInitialized = false;
 
 
             template<typename Arg1>
@@ -119,15 +95,7 @@ namespace stream
                 : container(container)
             {}
 
-        private:
-            friend class StreamBase<T, true, StreamImpl>;
-
-
-            ::std::reference_wrapper<const Container> container;
-            mutable typename ContainerTraits<Container>::Iterator iterator;
-            mutable bool iteratorInitialized = false;
-
-
+        protected:
             ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
@@ -148,6 +116,11 @@ namespace stream
 
                 return (iterator == container.get().end());
             }
+
+        private:
+            ::std::reference_wrapper<const Container> container;
+            mutable typename ContainerTraits<Container>::Iterator iterator;
+            mutable bool iteratorInitialized = false;
         };
 
 
@@ -163,14 +136,14 @@ namespace stream
                 : generator(::std::forward<Callable>(callable))
             {}
 
-        private:
-            ::std::decay_t<Generator> generator;
-
-
+        protected:
             ::std::optional<T> getNext()
             {
                 return generator();
             }
+
+        private:
+            ::std::decay_t<Generator> generator;
         };
 
         // References generator
@@ -186,17 +159,18 @@ namespace stream
                 : generator(::std::forward<Callable>(callable))
             {}
 
-        private:
-            ::std::decay_t<Generator> generator;
-
-
+        protected:
             ::std::optional<::std::reference_wrapper<::std::remove_reference_t<T>>> getNext()
             {
                 return generator();
             }
+
+        private:
+            ::std::decay_t<Generator> generator;
         };
 
 
+        // Range
         template<typename T, typename Iterator, typename StreamImpl>
         class Stream<T, Iterator, StreamImpl,
                      VoidT<::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
@@ -209,11 +183,7 @@ namespace stream
                 : begin(::std::forward<B>(begin)), end(::std::forward<E>(end))
             {}
 
-        private:
-            Iterator begin;
-            Iterator end;
-
-
+        protected:
             ::std::optional<T> getNext()
             {
                 if (isEndImpl())
@@ -228,6 +198,19 @@ namespace stream
             {
                 return (begin == end);
             }
+
+        private:
+            Iterator begin;
+            Iterator end;
+        };
+
+
+        // StreamFilter
+        template<typename T, typename S, typename Filter, typename StreamImpl>
+        class Stream<T, StreamFilter<S, Filter, StreamImpl>, StreamImpl, void> : public StreamFilter<S, Filter, StreamImpl>
+        {
+        public:
+            using StreamFilter<S, Filter, StreamImpl>::StreamFilter;
         };
     }
 }

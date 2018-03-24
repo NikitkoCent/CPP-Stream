@@ -1,11 +1,13 @@
 #ifndef CPP_STREAM_DETAIL_STREAM_TRAITS_H
 #define CPP_STREAM_DETAIL_STREAM_TRAITS_H
 
-#include "../stream.h"
 #include <type_traits>  // ::std::remove_reference_t
 
 namespace stream
 {
+    template<typename T1, typename T2>
+    struct Stream;
+
     namespace detail
     {
         template<typename Stream>
@@ -15,9 +17,8 @@ namespace stream
         struct StreamTraits<stream::Stream<T1, T2>>
         {
             using StreamType = stream::Stream<T1, T2>;
-            using ValueType = typename StreamType::value_type;
+            using ValueType = typename StreamType::Type;
             using Source = T2;
-            using Iterator = typename StreamType::const_iterator;
             static constexpr bool IsFinite = StreamType::IsFinite;
         };
 
@@ -32,14 +33,6 @@ namespace stream
         template<typename Stream>
         struct StreamTraits<Stream&&> : StreamTraits<Stream>
         {};
-
-        /*template<typename Stream>
-        struct StreamTraits<Stream*> : StreamTraits<Stream>
-        {};
-
-        template<typename Stream>
-        struct StreamTraits<Stream* const> : StreamTraits<Stream>
-        {};*/
 
 
         template<typename Stream>

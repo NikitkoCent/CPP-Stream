@@ -3,6 +3,7 @@
 
 #include "detail/streamv2.h"
 #include "detail/traits.h"
+#include "detail/stream_filter.h"
 #include <initializer_list>     // ::std::initializer_list
 #include <vector>               // ::std::vector
 #include <iterator>             // ::std::iterator_traits
@@ -14,6 +15,15 @@ namespace stream
     struct Stream : detail::Stream<T, Source, Stream<T, Source>>
     {
         using detail::Stream<T, Source, Stream<T, Source>>::Stream;
+
+        template<typename, bool, typename>
+        friend class detail::StreamBase;
+
+        template<typename, typename, typename, typename>
+        friend class detail::Stream;
+
+        template<typename, typename, typename>
+        friend class detail::StreamFilter;
     };
 
 
