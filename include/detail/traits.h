@@ -2,7 +2,7 @@
 #define CPP_STREAM_DETAIL_TRAITS_H
 
 #include "utility.h"    // VoidT
-#include <type_traits>  // ::std::result_of_t, ::std::invoke_result_t, ::std::enable_if_t
+#include <type_traits>  // ::std::result_of_t, ::std::invoke_result_t, ::std::enable_if_t, ::std::true_type, ::std::false_type
 #include <utility>      // ::std::declval
 #include <iterator>     // ::std::input_iterator_tag, ::std::iterator_traits
 
@@ -13,22 +13,19 @@ namespace stream
         #ifdef __cpp_lib_is_invocable
         template<typename Callable, typename... Args>
         using InvokeResultT = ::std::invoke_result_t<Callable, Args...>;
+        //#elif defined(__cpp_lib_result_of_sfinae)
         #else
         template<typename Callable, typename... Args>
-        using InvokeResultT = ::std::result_of_t<Callable(Args...)>;
+        using InvokeResultT = ::std::result_of_t<Callable&&(Args&&...)>;
         #endif
 
 
-        template<typename AlwaysVoid, typename F, typename... Args>
-        struct IsInvokableImpl : ::std::false_type
+        template<typename F, typename = void, typename... Args>
+        struct IsInvokable : ::std::false_type
         {};
 
         template<typename F, typename... Args>
-        struct IsInvokableImpl<VoidT<decltype(::std::declval<F>()(::std::declval<Args>()...))>, F, Args...> : ::std::true_type
-        {};
-
-        template<typename F, typename... Args>
-        struct IsInvokable : IsInvokableImpl<void, F, Args...>
+        struct IsInvokable<F, VoidT<InvokeResultT<F, Args...>>, Args...> : ::std::true_type
         {};
 
 
@@ -41,7 +38,7 @@ namespace stream
         template<typename C>
         struct ContainerTraits<C, VoidT<decltype(::std::declval<C>().begin()),
                                         decltype(::std::declval<C>().end()),
-                                        ::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
+                                        ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
                                                                              typename ::std::iterator_traits<typename C::const_iterator>::iterator_category>::value> >
                               >
         {

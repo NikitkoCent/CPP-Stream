@@ -26,10 +26,18 @@ namespace stream
 
     // Container cref guides
     template<typename Container>
-    Stream(const Container &) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
+    Stream(Container&) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
 
     template<typename Container>
-    Stream(const Container &&) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
+    Stream(const Container&) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
+
+    template<typename Container>
+    Stream(const Container&&) -> Stream<typename detail::ContainerTraits<Container>::ValueType, const Container&>;
+
+
+    // Generator guides
+    template<typename Generator>
+    Stream(Generator&&) -> Stream<detail::InvokeResultT<::std::decay_t<Generator>>, ::std::remove_reference_t<Generator>>;
 }
 
 #endif //CPP_STREAM_STREAMV2_H

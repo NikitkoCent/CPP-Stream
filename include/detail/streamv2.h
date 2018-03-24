@@ -66,7 +66,7 @@ namespace stream
             mutable bool iteratorInitialized;
 
 
-            ::std::optional<::std::reference_wrapper<T>> getNext()
+            ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
                 {
@@ -108,7 +108,7 @@ namespace stream
             mutable bool iteratorInitialized = false;
 
 
-            ::std::optional<::std::reference_wrapper<T>> getNext()
+            ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
                 {
@@ -127,6 +127,52 @@ namespace stream
                 }
 
                 return (iterator == container.get().end());
+            }
+        };
+
+
+        // Non-references generator
+        template<typename T, typename Generator, typename StreamImpl>
+        class Stream<T, Generator, StreamImpl, VoidT<InvokeResultT<::std::decay_t<Generator>>,
+                                                     ::std::enable_if_t<!::std::is_reference<T>::value>>
+                    > : public StreamBase<T, false, StreamImpl>
+        {
+        public:
+            template<typename Callable>
+            Stream(Callable &&callable)
+                : generator(::std::forward<Callable>(callable))
+            {}
+
+        private:
+            ::std::decay_t<Generator> generator;
+
+
+            ::std::optional<T> getNext()
+            {
+                return generator();
+            }
+        };
+
+        // References generator
+        template<typename T, typename Generator, typename StreamImpl>
+        class Stream<T, Generator, StreamImpl, VoidT< InvokeResultT<::std::decay_t<Generator>>,
+                                                      ::std::enable_if_t<::std::is_reference<T>::value>,
+                                                      ::std::enable_if_t<::std::is_lvalue_reference<InvokeResultT<::std::decay_t<Generator>>>::value> >
+                    > : public StreamBase<T, false, StreamImpl>
+        {
+        public:
+            template<typename Callable>
+            Stream(Callable &&callable)
+                : generator(::std::forward<Callable>(callable))
+            {}
+
+        private:
+            ::std::decay_t<Generator> generator;
+
+
+            ::std::optional<::std::reference_wrapper<::std::remove_reference_t<T>>> getNext()
+            {
+                return generator();
             }
         };
     }
