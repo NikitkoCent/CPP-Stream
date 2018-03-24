@@ -23,6 +23,9 @@ namespace stream
     template<typename T>
     Stream(::std::initializer_list<T>) -> Stream<T>;
 
+    template<typename T, typename... Ts>
+    Stream(T&&, Ts&&...) -> Stream<::std::remove_reference_t<T>>;
+
 
     // Container cref guides
     template<typename Container>

@@ -71,6 +71,24 @@ TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST_CONST_LREF)
     ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<int, std::vector<int>>>::value));
 }
 
+TEST(DEDUCTION_GUIDES_CONTAINER, TEMPLATE_PACK)
+{
+    stream::Stream stream1(10.5, 14, 16.0);
+    stream::Stream stream2(10.5);
+
+    ASSERT_TRUE((::std::is_same<decltype(stream1), stream::Stream<double>>::value));
+    ASSERT_TRUE((::std::is_same<decltype(stream2), stream::Stream<double>>::value));
+}
+
+TEST(DEDUCTION_GUIDES_CONTAINER, STD_STRING)
+{
+    stream::Stream stream1(std::string("one"), std::string("two"), std::string("three"));
+    stream::Stream stream2(std::string("one"));
+
+    ASSERT_TRUE((std::is_same<decltype(stream1), stream::Stream<std::string>>::value));
+    ASSERT_TRUE((std::is_same<decltype(stream2), stream::Stream<char, std::string>>::value));
+}
+
 
 TEST(DEDUCTION_GUIDES_CREF_CONTAINER, LREF)
 {
@@ -119,13 +137,6 @@ TEST(DEDUCTION_GUIDES_GENERATOR, LAMBDA)
 
     ASSERT_TRUE((std::is_same<decltype(stream1), decltype(stream3)>::value));
     ASSERT_TRUE((std::is_same<decltype(stream2), decltype(stream3)>::value));
-}
-
-TEST(A, A)
-{
-    auto lambda = [m = OnlyMovable{}] { return 10.5; };
-
-    stream::Stream stream(std::move(lambda));
 }
 
 
