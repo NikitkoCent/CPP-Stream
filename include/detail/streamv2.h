@@ -46,13 +46,18 @@ namespace stream
         {
         public:
             Stream(Container &&container)
-                : container(::std::move(container)), iterator(this->container.begin())
+                : container(::std::move(container))
             {}
 
             Stream(::std::initializer_list<T> initList)
-                : container(initList), iterator(this->container.begin())
+                : container(initList)
             {}
 
+            template<typename Arg1, typename... Args>
+            Stream(Arg1 &&arg1, Args&&... args)
+            {
+                initialize(::std::forward<Arg1>(arg1), ::std::forward<Args>(args)...);
+            }
 
         private:
             friend class StreamBase<T, true, StreamImpl>;
@@ -63,7 +68,7 @@ namespace stream
 
             Container container;
             mutable typename ContainerTraits<Container>::Iterator iterator;
-            mutable bool iteratorInitialized;
+            mutable bool iteratorInitialized = false;
 
 
             ::std::optional<::std::reference_wrapper<const T>> getNext()
@@ -86,6 +91,20 @@ namespace stream
 
                 return (iterator == container.end());
             }
+
+
+            template<typename Arg1>
+            void initialize(Arg1 &&arg1)
+            {
+                container.emplace_back(::std::forward<Arg1>(arg1));
+            }
+
+            template<typename Arg1, typename... Args>
+            void initialize(Arg1 &&arg1, Args&&... args)
+            {
+                container.emplace_back(::std::forward<Arg1>(arg1));
+                initialize(::std::forward<Args>(args)...);
+            }
         };
 
 
@@ -96,7 +115,7 @@ namespace stream
         {
         public:
             Stream(const Container &container)
-                : container(container), iterator(this->container.get().begin())
+                : container(container)
             {}
 
         private:
@@ -175,6 +194,9 @@ namespace stream
                 return generator();
             }
         };
+
+
+
     }
 }
 
