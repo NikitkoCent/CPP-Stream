@@ -5,6 +5,7 @@
 #include "detail/traits.h"
 #include <initializer_list>     // ::std::initializer_list
 #include <vector>               // ::std::vector
+#include <iterator>             // ::std::iterator_traits
 
 
 namespace stream
@@ -41,6 +42,12 @@ namespace stream
     // Generator guides
     template<typename Generator>
     Stream(Generator&&) -> Stream<detail::InvokeResultT<::std::decay_t<Generator>>, ::std::remove_reference_t<Generator>>;
+
+
+    // Range guides
+    template<typename Iterator1, typename Iterator2>
+    Stream(Iterator1&&, Iterator2&&) -> Stream<typename ::std::iterator_traits<::std::remove_reference_t<Iterator1>>::value_type,
+                                               ::std::remove_reference_t<Iterator1>>;
 }
 
 #endif //CPP_STREAM_STREAMV2_H

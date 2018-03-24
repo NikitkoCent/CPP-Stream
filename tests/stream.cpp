@@ -1,6 +1,4 @@
 #include <streamv2.h>
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
 #include <vector>
 #include <list>
 #include <initializer_list>
@@ -8,6 +6,8 @@
 #include <string>
 #include <random>
 #include <iostream>
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 
 #define LOG std::cout << __FILE__ << " (" << __LINE__ << "): " << __PRETTY_FUNCTION__ << std::endl
@@ -71,14 +71,37 @@ TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST_CONST_LREF)
     ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<int, std::vector<int>>>::value));
 }
 
-TEST(DEDUCTION_GUIDES_CONTAINER, TEMPLATE_PACK)
+TEST(DEDUCTION_GUIDES_CONTAINER, TEMPLATE_PACK1)
 {
     stream::Stream stream1(10.5, 14, 16.0);
     stream::Stream stream2(10.5);
 
-    ASSERT_TRUE((::std::is_same<decltype(stream1), stream::Stream<double>>::value));
-    ASSERT_TRUE((::std::is_same<decltype(stream2), stream::Stream<double>>::value));
+    ASSERT_TRUE((std::is_same<decltype(stream1), stream::Stream<double>>::value));
+    ASSERT_TRUE((std::is_same<decltype(stream2), stream::Stream<double>>::value));
 }
+
+TEST(DEDUCTION_GUIDES_CONTAINER, TEMPLATE_PACK2)
+{
+    double a = 10.5;
+
+    stream::Stream stream1(a, 14, 16.0);
+    stream::Stream stream2(a);
+
+    ASSERT_TRUE((std::is_same<decltype(stream1), stream::Stream<double>>::value));
+    ASSERT_TRUE((std::is_same<decltype(stream2), stream::Stream<double>>::value));
+}
+
+TEST(DEDUCTION_GUIDES_CONTAINER, TEMPLATE_PACK3)
+{
+    double a = 10.5;
+
+    stream::Stream stream1(10.5, a, 16.0);
+    stream::Stream stream2(a);
+
+    ASSERT_TRUE((std::is_same<decltype(stream1), stream::Stream<double>>::value));
+    ASSERT_TRUE((std::is_same<decltype(stream2), stream::Stream<double>>::value));
+}
+
 
 TEST(DEDUCTION_GUIDES_CONTAINER, STD_STRING)
 {
@@ -121,7 +144,7 @@ TEST(DEDUCTION_GUIDES_CREF_CONTAINER, CONST_RREF)
 TEST(DEDUCTION_GUIDES_GENERATOR, C_FUNCTION)
 {
     stream::Stream stream1(std::rand);
-    stream::Stream<int, decltype(std::rand)> stream2(::std::rand);
+    stream::Stream<int, decltype(std::rand)> stream2(std::rand);
 
     ASSERT_TRUE((std::is_same<decltype(stream1), decltype(stream2)>::value));
 }
@@ -139,5 +162,49 @@ TEST(DEDUCTION_GUIDES_GENERATOR, LAMBDA)
     ASSERT_TRUE((std::is_same<decltype(stream2), decltype(stream3)>::value));
 }
 
+
+TEST(DEDUCTION_GUIDES_RANGE, ITERATOR_LREF_LREF)
+{
+    std::vector<std::string> vec{"first", "second", "third"};
+    auto b = vec.begin();
+    auto e = vec.end();
+
+    stream::Stream stream(b, e);
+
+    ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, typename std::vector<std::string>::iterator>>::value));
+}
+
+TEST(DEDUCTION_GUIDES_RANGE, ITERATOR_LREF_RREF)
+{
+    std::vector<std::string> vec{"first", "second", "third"};
+    auto b = vec.begin();
+    auto e = vec.end();
+
+    stream::Stream stream(b, std::move(e));
+
+    ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, typename std::vector<std::string>::iterator>>::value));
+}
+
+TEST(DEDUCTION_GUIDES_RANGE, ITERATOR_RREF_LREF)
+{
+    std::vector<std::string> vec{"first", "second", "third"};
+    auto b = vec.begin();
+    auto e = vec.end();
+
+    stream::Stream stream(std::move(b), e);
+
+    ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, typename std::vector<std::string>::iterator>>::value));
+}
+
+TEST(DEDUCTION_GUIDES_RANGE, ITERATOR_RREF_RREF)
+{
+    std::vector<std::string> vec{"first", "second", "third"};
+    auto b = vec.begin();
+    auto e = vec.end();
+
+    stream::Stream stream(std::move(b), std::move(e));
+
+    ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, typename std::vector<std::string>::iterator>>::value));
+}
 
 #undef LOG

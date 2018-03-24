@@ -8,6 +8,7 @@
 #include <type_traits>      // ::std::enable_if_t, ::std::is_reference, ::std::is_const
 #include <initializer_list> // ::std::initializer_list
 #include <functional>       // ::std::reference_wrapper
+#include <iterator>         // ::std::iterator_traits
 
 namespace stream
 {
@@ -196,7 +197,38 @@ namespace stream
         };
 
 
+        template<typename T, typename Iterator, typename StreamImpl>
+        class Stream<T, Iterator, StreamImpl,
+                     VoidT<::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
+                                                                typename ::std::iterator_traits<Iterator>::iterator_category>::value>>
+                    > : public StreamBase<T, true, StreamImpl>
+        {
+        public:
+            template<typename B, typename E>
+            Stream(B &&begin, E &&end)
+                : begin(::std::forward<B>(begin)), end(::std::forward<E>(end))
+            {}
 
+        private:
+            Iterator begin;
+            Iterator end;
+
+
+            ::std::optional<T> getNext()
+            {
+                if (isEndImpl())
+                {
+                    return { ::std::nullopt };
+                }
+
+                return *begin++;
+            }
+
+            bool isEndImpl() const
+            {
+                return (begin == end);
+            }
+        };
     }
 }
 
