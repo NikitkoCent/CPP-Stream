@@ -52,21 +52,23 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 # ================================ GOOGLETEST END =======================================
 
-add_executable(unittesting include/stream_visitors.h
-                           include/detail/utility.h
-                           include/detail/stream_traits.h
-                           include/detail/stream_filter.h
-                           include/streamv2.h
-                           include/detail/streamv2.h
-                           include/detail/traits.h
+add_executable(unittesting include/traits.h
+                           include/stream.h
+                           include/stream_traits.h
+                           include/stream_visitors.h
+                           include/detail/stream_impl.h
+                           include/detail/traits_impl.h
                            include/detail/stream_base.h
-                           tests/stream.cpp)
+                           include/detail/utility.h
+                           include/detail/stream_traits_impl.h
+                           include/detail/stream_filter.h
+                           tests/stream_impl.cpp )
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)
 
 # ================================= TEST COVERAGE =======================================
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#[[if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(${cmake-modules_SOURCE_DIR}/CodeCoverage.cmake)
 
     if (CMAKE_CXX_FLAGS_COVERAGE)
@@ -75,7 +77,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
                                   EXECUTABLE ctest
                                   DEPENDENCIES unittesting)
     endif()
-endif()
+endif()]]
 # ===============================  END TEST COVERAGE ====================================
 
 MESSAGE("Build type : ${CMAKE_BUILD_TYPE}")

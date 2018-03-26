@@ -1,9 +1,10 @@
 #ifndef CPP_STREAM_DETAIL_STREAM_BASE_H
 #define CPP_STREAM_DETAIL_STREAM_BASE_H
 
-#include "stream_traits.h"
-#include <type_traits>      // ::std::enable_if_t, ::std::decay_t
-#include <utility>          // ::std::move, ::std::forward
+#include "traits_impl.h"        // InvokeResultT
+#include "stream_traits_impl.h" // IsStreamFilterFor
+#include <type_traits>          // ::std::enable_if_t, ::std::decay_t
+#include <utility>              // ::std::move, ::std::forward
 
 namespace stream
 {

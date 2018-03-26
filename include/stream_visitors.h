@@ -1,11 +1,11 @@
 #ifndef CPP_STREAM_STREAM_VISITORS_H
 #define CPP_STREAM_STREAM_VISITORS_H
 
-#include "detail/stream_traits.h"
-#include "detail/traits.h"
-#include <cstddef>  // ::std::size_t
-#include <optional> // ::std::optional
-#include <utility>  // ::std::move, ::std::forward
+#include "stream_traits.h"              // StreamValueT
+#include "traits.h"                     // detail::InvokeResultT
+#include <cstddef>                      // ::std::size_t
+#include <optional>                     // ::std::optional
+#include <utility>                      // ::std::move, ::std::forward
 
 
 namespace stream
@@ -33,7 +33,7 @@ namespace stream
         auto skip(::std::size_t amount)
         {
             return [amount](auto &&value, auto &&stream) mutable {
-                using Type = stream::detail::StreamValueT<decltype(stream)>;
+                using Type = stream::StreamValueT<decltype(stream)>;
                 //using Type = int;
 
                 if (amount > 0) {
@@ -59,7 +59,7 @@ namespace stream
         auto get(::std::size_t n)
         {
             return [n](auto &&value, auto &&stream) mutable {
-                using Type = detail::StreamValueT<decltype(stream)>;
+                using Type = stream::StreamValueT<decltype(stream)>;
                 if (n > 0)
                 {
                     --n;

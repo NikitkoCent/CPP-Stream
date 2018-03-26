@@ -1,10 +1,10 @@
-#ifndef CPP_STREAM_DETAIL_TRAITS_H
-#define CPP_STREAM_DETAIL_TRAITS_H
+#ifndef CPP_STREAM_DETAIL_TRAITS_IMPL_H
+#define CPP_STREAM_DETAIL_TRAITS_IMPL_H
 
 #include "utility.h"    // VoidT
 #include <type_traits>  // ::std::result_of_t, ::std::invoke_result_t, ::std::enable_if_t, ::std::true_type, ::std::false_type
 #include <utility>      // ::std::declval
-#include <iterator>     // ::std::input_iterator_tag, ::std::iterator_traits
+#include <iterator>     // ::std::forward_iterator_tag, ::std::iterator_traits
 
 namespace stream
 {
@@ -29,18 +29,22 @@ namespace stream
         {};
 
 
+        template<typename T>
+        using RemoveCRefT = ::std::remove_const_t<::std::remove_reference_t<T>>;
+
+
         template<typename C, typename = void>
-        struct ContainerTraits
+        struct ContainerTraitsImpl
         {
             static constexpr bool IsContainer = false;
         };
 
         template<typename C>
-        struct ContainerTraits<C, VoidT<decltype(::std::declval<C>().begin()),
-                                        decltype(::std::declval<C>().end()),
-                                        ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
-                                                                             typename ::std::iterator_traits<typename C::const_iterator>::iterator_category>::value> >
-                              >
+        struct ContainerTraitsImpl<C, VoidT<decltype(::std::declval<C>().begin()),
+                                            decltype(::std::declval<C>().end()),
+                                            ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
+                                                                                 typename ::std::iterator_traits<typename C::const_iterator>::iterator_category>::value> >
+                                  >
         {
             static constexpr bool IsContainer = true;
             using Iterator = typename C::const_iterator;
@@ -48,13 +52,9 @@ namespace stream
         };
 
         template<typename C>
-        struct ContainerTraits<C&> : ContainerTraits<C>
-        {};
-
-        template<typename C>
-        struct ContainerTraits<C&&> : ContainerTraits<C>
+        struct ContainerTraits : ContainerTraitsImpl<RemoveCRefT<C>>
         {};
     }
 }
 
-#endif //CPP_STREAM_DETAIL_TRAITS_H
+#endif //CPP_STREAM_DETAIL_TRAITS_IMPL_H

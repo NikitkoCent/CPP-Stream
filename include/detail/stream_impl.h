@@ -1,48 +1,48 @@
-#ifndef CPP_STREAM_DETAIL_STREAMV2_H
-#define CPP_STREAM_DETAIL_STREAMV2_H
+#ifndef CPP_STREAM_DETAIL_STREAM_H
+#define CPP_STREAM_DETAIL_STREAM_H
 
-#include "stream_base.h"
-#include "utility.h"        // VoidT
-#include "traits.h"         // IsContainer
-#include "stream_traits.h"
-#include "stream_filter.h"
-#include <optional>         // ::std::optional
-#include <utility>          // ::std::move, ::std::forward, ::std::declval
-#include <type_traits>      // ::std::enable_if_t, ::std::is_reference, ::std::is_const
-#include <initializer_list> // ::std::initializer_list
-#include <functional>       // ::std::reference_wrapper
-#include <iterator>         // ::std::iterator_traits
+#include "stream_base.h"        // StreamBase
+#include "utility.h"            // VoidT
+#include "traits_impl.h"        // ContainerTraits
+#include "stream_traits_impl.h" // IsStreamFilterFor
+#include "stream_filter.h"      // StreamFilter
+#include <optional>             // ::std::optional
+#include <utility>              // ::std::move, ::std::forward, ::std::declval
+#include <type_traits>          // ::std::enable_if_t, ::std::is_reference, ::std::is_const
+#include <initializer_list>     // ::std::initializer_list
+#include <functional>           // ::std::reference_wrapper
+#include <iterator>             // ::std::iterator_traits
 
 namespace stream
 {
     namespace detail
     {
         template<typename, typename, typename, typename = void>
-        class Stream;
+        class StreamImpl;
 
         // Container
-        template<typename T, typename Container, typename StreamImpl>
-        class Stream<T, Container, StreamImpl, VoidT< ::std::enable_if_t<ContainerTraits<Container>::IsContainer>,
+        template<typename T, typename Container, typename Stream>
+        class StreamImpl<T, Container, Stream, VoidT< ::std::enable_if_t<ContainerTraits<Container>::IsContainer>,
                                                       ::std::enable_if_t<!::std::is_reference<Container>::value>,
                                                       ::std::enable_if_t<!::std::is_const<Container>::value> >
-                    > : public StreamBase<T, true, StreamImpl>
+                        > : public StreamBase<T, true, Stream>
         {
         public:
-            Stream(Container &&container)
+            StreamImpl(Container &&container)
                 : container(::std::move(container))
             {}
 
-            Stream(::std::initializer_list<T> initList)
+            StreamImpl(::std::initializer_list<T> initList)
                 : container(initList)
             {}
 
             template<typename Arg1, typename... Args>
-            Stream(Arg1 &&arg1, Args&&... args)
+            StreamImpl(Arg1 &&arg1, Args&&... args)
             {
                 initialize(::std::forward<Arg1>(arg1), ::std::forward<Args>(args)...);
             }
 
-
+        protected:
             ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
@@ -53,7 +53,6 @@ namespace stream
                 return ::std::cref(*iterator++);
             }
 
-        protected:
             bool isEndImpl() const
             {
                 if (!iteratorInitialized)
@@ -87,16 +86,16 @@ namespace stream
 
 
         // Container cref
-        template<typename T, typename Container, typename StreamImpl>
-        class Stream<T, const Container&, StreamImpl, VoidT<::std::enable_if_t<ContainerTraits<Container>::IsContainer>>
-                    > : public StreamBase<T, true, StreamImpl>
+        template<typename T, typename Container, typename Stream>
+        class StreamImpl<T, const Container&, Stream, VoidT<::std::enable_if_t<ContainerTraits<Container>::IsContainer>>
+                        > : public StreamBase<T, true, Stream>
         {
         public:
-            Stream(const Container &container)
+            StreamImpl(const Container &container)
                 : container(container)
             {}
 
-
+        protected:
             ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
@@ -106,8 +105,6 @@ namespace stream
 
                 return ::std::cref(*iterator++);
             }
-
-        protected:
 
             bool isEndImpl() const
             {
@@ -128,14 +125,14 @@ namespace stream
 
 
         // Non-references generator
-        template<typename T, typename Generator, typename StreamImpl>
-        class Stream<T, Generator, StreamImpl, VoidT<InvokeResultT<::std::decay_t<Generator>>,
+        template<typename T, typename Generator, typename Stream>
+        class StreamImpl<T, Generator, Stream, VoidT<InvokeResultT<::std::decay_t<Generator>>,
                                                      ::std::enable_if_t<!::std::is_reference<T>::value>>
-                    > : public StreamBase<T, false, StreamImpl>
+                        > : public StreamBase<T, false, Stream>
         {
         public:
             template<typename Callable>
-            Stream(Callable &&callable)
+            StreamImpl(Callable &&callable)
                 : generator(::std::forward<Callable>(callable))
             {}
 
@@ -150,15 +147,15 @@ namespace stream
         };
 
         // References generator
-        template<typename T, typename Generator, typename StreamImpl>
-        class Stream<T, Generator, StreamImpl, VoidT< InvokeResultT<::std::decay_t<Generator>>,
+        template<typename T, typename Generator, typename Stream>
+        class StreamImpl<T, Generator, Stream, VoidT< InvokeResultT<::std::decay_t<Generator>>,
                                                       ::std::enable_if_t<::std::is_reference<T>::value>,
                                                       ::std::enable_if_t<::std::is_lvalue_reference<InvokeResultT<::std::decay_t<Generator>>>::value> >
-                    > : public StreamBase<T, false, StreamImpl>
+                        > : public StreamBase<T, false, Stream>
         {
         public:
             template<typename Callable>
-            Stream(Callable &&callable)
+            StreamImpl(Callable &&callable)
                 : generator(::std::forward<Callable>(callable))
             {}
 
@@ -174,15 +171,15 @@ namespace stream
 
 
         // Range
-        template<typename T, typename Iterator, typename StreamImpl>
-        class Stream<T, Iterator, StreamImpl,
-                     VoidT<::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
+        template<typename T, typename Iterator, typename Stream>
+        class StreamImpl<T, Iterator, Stream,
+                         VoidT<::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
                                                                 typename ::std::iterator_traits<Iterator>::iterator_category>::value>>
-                    > : public StreamBase<T, true, StreamImpl>
+                        > : public StreamBase<T, true, Stream>
         {
         public:
             template<typename B, typename E>
-            Stream(B &&begin, E &&end)
+            StreamImpl(B &&begin, E &&end)
                 : begin(::std::forward<B>(begin)), end(::std::forward<E>(end))
             {}
 
@@ -210,14 +207,15 @@ namespace stream
 
 
         // StreamFilter
-        template<typename T, typename S, typename Filter, typename StreamImpl>
-        class Stream<T, StreamFilter<S, Filter, void>, StreamImpl, VoidT<::std::enable_if_t<IsStreamFilterFor<Filter, S>::value>>
-                    > : public StreamFilter<S, Filter, StreamImpl>
+        template<typename T, typename S, typename Filter, typename Stream>
+        class StreamImpl<T, StreamFilter<S, Filter>, Stream,
+                         VoidT<::std::enable_if_t<IsStreamFilterFor<Filter, S>::value>>
+                        > : public StreamFilter<S, Filter, Stream>
         {
         public:
-            using StreamFilter<S, Filter, StreamImpl>::StreamFilter;
+            using StreamFilter<S, Filter, Stream>::StreamFilter;
         };
     }
 }
 
-#endif //CPP_STREAM_DETAIL_STREAMV2_H
+#endif //CPP_STREAM_DETAIL_STREAM_H

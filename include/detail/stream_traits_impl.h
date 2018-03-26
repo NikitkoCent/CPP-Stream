@@ -1,9 +1,10 @@
-#ifndef CPP_STREAM_DETAIL_STREAM_TRAITS_H
-#define CPP_STREAM_DETAIL_STREAM_TRAITS_H
+#ifndef CPP_STREAM_DETAIL_STREAM_TRAITS_IMPL_H
+#define CPP_STREAM_DETAIL_STREAM_TRAITS_IMPL_H
 
-#include "traits.h"
-#include <type_traits>  // ::std::remove_reference_t
-#include <optional>
+#include "utility.h"        // VoidT
+#include "traits_impl.h"    // RemoveCRefT, InvokeResultT
+#include <type_traits>      // ::std::enable_if_t, ::std::remove_reference_t, ::std::decay_t
+#include <optional>         // ::std::optional
 
 namespace stream
 {
@@ -29,9 +30,15 @@ namespace stream
         };
 
         template<typename Stream>
-        struct StreamTraits : StreamTraitsImpl<::std::remove_const_t<::std::remove_reference_t<Stream>>>
+        struct StreamTraits : StreamTraitsImpl<RemoveCRefT<Stream>>
         {};
 
+
+        template<typename Stream>
+        constexpr static bool IsStreamV = StreamTraits<Stream>::IsStream;
+
+        template<typename Stream>
+        using StreamTypeT = typename StreamTraits<Stream>::StreamType;
 
         template<typename Stream>
         using StreamValueT = typename StreamTraits<Stream>::ValueType;
@@ -60,9 +67,9 @@ namespace stream
 
 
         template<typename Filter, typename S>
-        struct IsStreamFilterFor : public IsStreamFilterForImpl<Filter, ::std::remove_const_t<::std::remove_reference_t<S>>, void>
+        struct IsStreamFilterFor : public IsStreamFilterForImpl<Filter, RemoveCRefT<S>>
         {};
     }
 }
 
-#endif //CPP_STREAM_DETAIL_STREAM_TRAITS_H
+#endif //CPP_STREAM_DETAIL_STREAM_TRAITS_IMPL_H
