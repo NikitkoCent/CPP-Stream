@@ -62,7 +62,7 @@ add_executable(unittesting include/traits.h
                            include/detail/utility.h
                            include/detail/stream_traits_impl.h
                            include/detail/stream_filter.h
-                           tests/stream_impl.cpp )
+                           tests/stream.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)

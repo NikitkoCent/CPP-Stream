@@ -3,7 +3,7 @@
 
 #include "traits_impl.h"        // InvokeResultT
 #include "stream_traits_impl.h" // IsStreamFilterFor
-#include <type_traits>          // ::std::enable_if_t, ::std::decay_t
+#include <type_traits>          // ::std::enable_if_t, ::std::decay_t, ::std::is_reference
 #include <utility>              // ::std::move, ::std::forward
 
 namespace stream
@@ -21,6 +21,9 @@ namespace stream
         class StreamBase
         {
         public:
+            static_assert(!::std::is_reference<T>::value, "Stream of references isn't allowed");
+
+
             using Type = T;
             static constexpr bool IsFinite = Finiteness;
 

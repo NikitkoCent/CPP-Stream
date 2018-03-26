@@ -151,7 +151,7 @@ namespace stream
         class StreamImpl<T, Generator, Stream, VoidT< InvokeResultT<::std::decay_t<Generator>>,
                                                       ::std::enable_if_t<::std::is_reference<T>::value>,
                                                       ::std::enable_if_t<::std::is_lvalue_reference<InvokeResultT<::std::decay_t<Generator>>>::value> >
-                        > : public StreamBase<T, false, Stream>
+                        > : public StreamBase<::std::reference_wrapper<::std::remove_reference_t<T>>, false, Stream>
         {
         public:
             template<typename Callable>
