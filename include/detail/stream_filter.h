@@ -14,12 +14,11 @@ namespace stream
     namespace detail
     {
         template<typename S, typename Filter, typename StreamImpl>
-        class StreamFilter : public StreamBase<typename InvokeResultT<::std::decay_t<Filter>, const StreamValueT<S>&>::value_type,
+        class StreamFilter : public StreamBase<typename InvokeResultT<::std::decay_t<Filter>, const StreamValueT<S>&, const S&>::value_type,
                                                StreamFinitenessV<S>, StreamImpl>
         {
         private:
-            using Reference = const StreamValueT<S>&;
-            using Parent = StreamBase<typename InvokeResultT<::std::decay_t<Filter>, Reference>::value_type,
+            using Parent = StreamBase<typename InvokeResultT<::std::decay_t<Filter>, const StreamValueT<S>&, const S&>::value_type,
                                       StreamFinitenessV<S>, StreamImpl>;
 
         public:
@@ -28,7 +27,7 @@ namespace stream
                 : stream(::std::move(stream)), filter(::std::forward<Callable>(filter))
             {}
 
-        protected:
+
             ::std::optional<typename Parent::Type> getNext()
             {
                 auto fromStream = stream.getNext();
@@ -37,11 +36,11 @@ namespace stream
                     return { ::std::nullopt };
                 }
 
-                return filter(static_cast<Reference>(fromStream.value()));
+                return filter(static_cast<const StreamValueT<S>&>(fromStream.value()), static_cast<const S&>(stream));
             }
 
         private:
-            friend class StreamBase<typename InvokeResultT<::std::decay_t<Filter>, Reference>::value_type,
+            friend class StreamBase<typename InvokeResultT<::std::decay_t<Filter>, const StreamValueT<S>&, const S&>::value_type,
                                     StreamFinitenessV<S>, StreamImpl>;
 
 
@@ -55,6 +54,10 @@ namespace stream
                 return stream.isEnd();
             };
         };
+
+        template<typename S, typename Filter>
+        class StreamFilter<S, Filter, void>
+        {};
     }
 }
 

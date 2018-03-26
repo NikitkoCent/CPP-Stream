@@ -1,4 +1,5 @@
 #include <streamv2.h>
+#include <stream_visitors.h>
 #include <vector>
 #include <list>
 #include <initializer_list>
@@ -205,6 +206,37 @@ TEST(DEDUCTION_GUIDES_RANGE, ITERATOR_RREF_RREF)
     stream::Stream stream(std::move(b), std::move(e));
 
     ASSERT_TRUE((std::is_same<decltype(stream), stream::Stream<std::string, typename std::vector<std::string>::iterator>>::value));
+}
+
+
+TEST(A, A)
+{
+    stream::Stream(1, 2, 3) | stream::visitors::skip(1) | stream::visitors::print_to(::std::cout);
+    std::cout << std::endl;
+}
+
+TEST(A, B)
+{
+    stream::Stream a = stream::Stream(1, 2, 3) | stream::visitors::skip(1);
+    stream::Stream b = a | stream::visitors::skip(1);
+
+    (b | stream::visitors::print_to(std::cout)) << std::endl;
+}
+
+TEST(A, C)
+{
+    stream::Stream{1, 2, 3, 4, 5}
+    | stream::visitors::skip(1)
+    | stream::visitors::map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+    | stream::visitors::map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+    | stream::visitors::print_to(std::cout, "\n");
+
+    std::cout << std::endl;
+}
+
+TEST(A, D)
+{
+    //(stream::Stream(std::rand) | stream::visitors::get(10) | stream::visitors::print_to(std::cout)) << std::endl;
 }
 
 #undef LOG

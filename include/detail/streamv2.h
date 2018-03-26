@@ -42,7 +42,7 @@ namespace stream
                 initialize(::std::forward<Arg1>(arg1), ::std::forward<Args>(args)...);
             }
 
-        protected:
+
             ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
@@ -53,6 +53,7 @@ namespace stream
                 return ::std::cref(*iterator++);
             }
 
+        protected:
             bool isEndImpl() const
             {
                 if (!iteratorInitialized)
@@ -95,7 +96,7 @@ namespace stream
                 : container(container)
             {}
 
-        protected:
+
             ::std::optional<::std::reference_wrapper<const T>> getNext()
             {
                 if (isEndImpl())
@@ -105,6 +106,8 @@ namespace stream
 
                 return ::std::cref(*iterator++);
             }
+
+        protected:
 
             bool isEndImpl() const
             {
@@ -136,7 +139,7 @@ namespace stream
                 : generator(::std::forward<Callable>(callable))
             {}
 
-        protected:
+
             ::std::optional<T> getNext()
             {
                 return generator();
@@ -159,7 +162,7 @@ namespace stream
                 : generator(::std::forward<Callable>(callable))
             {}
 
-        protected:
+
             ::std::optional<::std::reference_wrapper<::std::remove_reference_t<T>>> getNext()
             {
                 return generator();
@@ -183,7 +186,7 @@ namespace stream
                 : begin(::std::forward<B>(begin)), end(::std::forward<E>(end))
             {}
 
-        protected:
+
             ::std::optional<T> getNext()
             {
                 if (isEndImpl())
@@ -194,6 +197,7 @@ namespace stream
                 return *begin++;
             }
 
+        protected:
             bool isEndImpl() const
             {
                 return (begin == end);
@@ -207,7 +211,8 @@ namespace stream
 
         // StreamFilter
         template<typename T, typename S, typename Filter, typename StreamImpl>
-        class Stream<T, StreamFilter<S, Filter, StreamImpl>, StreamImpl, void> : public StreamFilter<S, Filter, StreamImpl>
+        class Stream<T, StreamFilter<S, Filter, void>, StreamImpl, VoidT<::std::enable_if_t<IsStreamFilterFor<Filter, S>::value>>
+                    > : public StreamFilter<S, Filter, StreamImpl>
         {
         public:
             using StreamFilter<S, Filter, StreamImpl>::StreamFilter;
