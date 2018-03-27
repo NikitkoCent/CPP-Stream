@@ -7,6 +7,7 @@
 #include <cstddef>                      // ::std::size_t
 #include <optional>                     // ::std::optional
 #include <utility>                      // ::std::move, ::std::forward
+#include <stdexcept>
 
 
 namespace stream
@@ -70,6 +71,77 @@ namespace stream
                 end = true;
                 return ::std::optional<Type>{::std::nullopt};
             });
+        }
+
+
+        template<typename Identity, typename Accumulator>
+        auto reduce(Identity &&identity, Accumulator &&accumulator)
+        {
+            return [f1 = ::std::forward<Identity>(identity), fn = ::std::forward<Accumulator>(accumulator)](auto &&stream) mutable {
+                using Type = detail::InvokeResultT<decltype(f1), StreamValueT<decltype(stream)>&&>;
+
+                if (stream.isEnd())
+                {
+                    return Type{};
+                }
+
+                Type result;
+                while (!stream.isEnd())
+                {
+                    auto initializer = stream.getNext();
+                    if (initializer)
+                    {
+                        result = f1(*::std::move(initializer));
+                        break;
+                    }
+                }
+
+                while (!stream.isEnd())
+                {
+                    auto forReduce = stream.getNext();
+                    if (forReduce)
+                    {
+                        result = fn(::std::move(result), *::std::move(forReduce));
+                    }
+                }
+
+                return result;
+            };
+        }
+
+        template<typename Accumulator>
+        auto reduce(Accumulator &&accumulator)
+        {
+            return reduce([](auto &&elem){ return ::std::forward<decltype(elem)>(elem); },
+                          ::std::forward<Accumulator>(accumulator));
+        }
+
+
+        auto sum()
+        {
+            return reduce([](auto &&v1, auto &&v2) { return v1 + v2; });
+        }
+
+
+        auto nth(::std::size_t index)
+        {
+            return [index](auto &&stream) mutable {
+                while (!stream.isEnd())
+                {
+                    auto result = stream.getNext();
+                    if (result)
+                    {
+                        if (index > 0)
+                        {
+                            --index;
+                        }
+
+                        return *::std::move(result);
+                    }
+                }
+
+                throw ::std::out_of_range("Out of Stream range");
+            };
         }
     }
 }
