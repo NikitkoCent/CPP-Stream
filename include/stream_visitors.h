@@ -185,10 +185,37 @@ namespace stream
         }
 
 
-        auto group(::std::size_t n)
+        class group
         {
+        private:
+            ::std::size_t n;
 
-        }
+        public:
+            group(::std::size_t n) : n(n) {}
+
+            template<typename Stream>
+            auto createFilter()
+            {
+                using Type = StreamValueT<Stream>;
+
+                ::std::size_t n = this->n;
+                return makeFilter<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&, bool&) mutable {
+                    if (vec.size() == n)
+                    {
+                        return ::std::optional<::std::vector<Type>>(::std::move(vec));
+                    }
+
+                    vec.emplace_back(::std::forward<decltype(value)>(value));
+
+                    if (vec.size() == n)
+                    {
+                        return ::std::optional<::std::vector<Type>>(::std::move(vec));
+                    }
+
+                    return ::std::optional<::std::vector<Type>>(::std::nullopt);
+                });
+            }
+        };
     }
 }
 

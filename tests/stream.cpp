@@ -229,8 +229,8 @@ TEST(A, C)
 {
     stream::Stream{1, 2, 3, 4, 5}
     | skip(1)
-    | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
-    | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+    | map([](auto &&v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+    | map([](auto &&v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
     | print_to(std::cout, "\n");
 
     std::cout << std::endl;
@@ -239,8 +239,8 @@ TEST(A, C)
 TEST(A, D)
 {
     stream::Stream(std::rand)
-    | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
-    | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+    | map([](auto &&v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+    | map([](auto &&v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
     | get(10)
     | skip(1)
     | print_to(std::cout, "\n");
@@ -268,8 +268,8 @@ TEST(A, F)
     int start = 0;
 
     auto vector = stream::Stream([start]() mutable { return start = (start + 10) % 30; })
-             | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
-             | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+             | map([](auto &&v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+             | map([](auto &&v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
              | get(10)
              | to_vector();
 
@@ -287,8 +287,8 @@ TEST(A, G)
 
     auto vector = stream::Stream([start]() mutable { return start += 2; })
                   | filter([](auto &&v) { return (v <= 20); })
-                  | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
-                  | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+                  | map([](auto &&v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+                  | map([](auto &&v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
                   | get(10)
                   | to_vector();
 
@@ -307,8 +307,8 @@ TEST(A, H)
 
     auto vector = stream::Stream([start]() mutable { return start += 2; })
                   | filter([](auto &&v) { return (v <= 20); })
-                  | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
-                  | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+                  | map([](auto &&v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+                  | map([](auto &&v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
                   | get(10)
                   | to_vector();
 
@@ -318,6 +318,27 @@ TEST(A, H)
     }
 
     std::cout << std::endl;
+}
+
+
+TEST(A, I)
+{
+    int start = 0;
+    auto vectors = stream::Stream([start]() mutable { return ++start; })
+                    | map([](auto &&v) { return v * v; })
+                    | group(10)
+                    | get(2)
+                    | to_vector();
+
+    for (const auto &vector : vectors)
+    {
+        for (const auto &elem : vector)
+        {
+            std::cout << elem << ' ';
+        }
+
+        std::cout << std::endl;
+    }
 }
 
 
