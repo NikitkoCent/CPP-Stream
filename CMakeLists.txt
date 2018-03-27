@@ -56,12 +56,14 @@ add_executable(unittesting include/traits.h
                            include/stream.h
                            include/stream_traits.h
                            include/stream_visitors.h
+                           include/filter.h
                            include/detail/stream_impl.h
                            include/detail/traits_impl.h
                            include/detail/stream_base.h
                            include/detail/utility.h
                            include/detail/stream_traits_impl.h
                            include/detail/stream_filter.h
+                           include/detail/filter_impl.h
                            tests/stream.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 

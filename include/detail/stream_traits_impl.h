@@ -3,6 +3,7 @@
 
 #include "utility.h"        // VoidT
 #include "traits_impl.h"    // RemoveCRefT, InvokeResultT
+#include "filter_impl.h"    // Filter
 #include <type_traits>      // ::std::enable_if_t, ::std::remove_reference_t, ::std::decay_t
 #include <optional>         // ::std::optional
 
@@ -54,20 +55,22 @@ namespace stream
         struct IsStreamFilterForImpl : ::std::false_type
         {};
 
-        template<typename Filter, typename T1, typename T2>
-        struct IsStreamFilterForImpl<Filter, stream::Stream<T1,T2>,
-                                     VoidT<::std::enable_if_t<::std::is_same<::std::optional<typename InvokeResultT<::std::decay_t<Filter>,
+        template<typename Callable, bool Fin, typename T1, typename T2>
+        struct IsStreamFilterForImpl<Filter<Callable, Fin>, stream::Stream<T1,T2>,
+                                     VoidT<::std::enable_if_t<::std::is_same<::std::optional<typename InvokeResultT<Filter<Callable, Fin>,
                                                                                                                     const StreamValueT<stream::Stream<T1, T2>>&,
-                                                                                                                    const stream::Stream<T1, T2>&>::value_type>,
-                                                                             InvokeResultT<::std::decay_t<Filter>,
+                                                                                                                    const stream::Stream<T1, T2>&,
+                                                                                                                    bool&>::value_type>,
+                                                                             InvokeResultT<Filter<Callable, Fin>,
                                                                                            const StreamValueT<stream::Stream<T1, T2>>&,
-                                                                                           const stream::Stream<T1, T2>&>>::value>>
+                                                                                           const stream::Stream<T1, T2>&,
+                                                                                           bool&>>::value>>
                                     > : ::std::true_type
         {};
 
 
         template<typename Filter, typename S>
-        struct IsStreamFilterFor : public IsStreamFilterForImpl<Filter, RemoveCRefT<S>>
+        struct IsStreamFilterFor : public IsStreamFilterForImpl<RemoveCRefT<Filter>, RemoveCRefT<S>>
         {};
     }
 }

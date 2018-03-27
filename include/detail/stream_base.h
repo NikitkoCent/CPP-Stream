@@ -13,7 +13,7 @@ namespace stream
 
     namespace detail
     {
-        template<typename S, typename Filter, typename StreamImpl>
+        template<typename, typename, typename>
         class StreamFilter;
 
 
@@ -31,7 +31,7 @@ namespace stream
             template<typename Filter, typename ::std::enable_if_t<IsStreamFilterFor<Filter, StreamImpl>::value>* = nullptr>
             auto operator|(Filter &&filter)
             {
-                using V = typename InvokeResultT<::std::decay_t<Filter>, const Type&, const StreamImpl&>::value_type;
+                using V = typename InvokeResultT<::std::decay_t<Filter>, const Type&, const StreamImpl&, bool&>::value_type;
                 return stream::Stream<V, StreamFilter<StreamImpl, Filter, void>>(::std::move(static_cast<StreamImpl&>(*this)),
                                                                                  ::std::forward<Filter>(filter));
             }

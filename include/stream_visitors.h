@@ -3,6 +3,7 @@
 
 #include "stream_traits.h"              // StreamValueT
 #include "traits.h"                     // detail::InvokeResultT
+#include "filter.h"                     // makeFilter
 #include <cstddef>                      // ::std::size_t
 #include <optional>                     // ::std::optional
 #include <utility>                      // ::std::move, ::std::forward
@@ -32,7 +33,7 @@ namespace stream
 
         auto skip(::std::size_t amount)
         {
-            return [amount](auto &&value, auto &&stream) mutable {
+            return makeFilter<false>([amount](auto &&value, auto &&stream, bool&) mutable {
                 using Type = stream::StreamValueT<decltype(stream)>;
                 //using Type = int;
 
@@ -42,23 +43,23 @@ namespace stream
                 }
 
                 return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
-            };
+            });
         }
 
 
         template<typename Transform>
         auto map(Transform &&transform)
         {
-            return [transform = ::std::forward<Transform>(transform)](auto &&value, auto&&) mutable {
+            return makeFilter<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto&&, bool&) mutable {
                 using Type = detail::InvokeResultT<::std::decay_t<Transform>, decltype(value)>;
                 return ::std::optional<Type>{transform(::std::forward<decltype(value)>(value))};
-            };
+            });
         }
 
 
         auto get(::std::size_t n)
         {
-            return [n](auto &&value, auto &&stream) mutable {
+            return makeFilter<true>([n](auto &&value, auto &&stream, bool &end) mutable {
                 using Type = stream::StreamValueT<decltype(stream)>;
                 if (n > 0)
                 {
@@ -66,8 +67,9 @@ namespace stream
                     return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
                 }
 
+                end = true;
                 return ::std::optional<Type>{::std::nullopt};
-            };
+            });
         }
     }
 }

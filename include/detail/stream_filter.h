@@ -2,6 +2,7 @@
 #define CPP_STREAM_DETAIL_STREAM_FILTER_H
 
 #include "stream_base.h"        // StreamBase
+#include "filter_impl.h"        // Filter
 #include "traits_impl.h"        // InvokeResultT
 #include "stream_traits_impl.h" // StreamValueT
 #include <type_traits>          // ::std::decay_t, ::std::enable_if_t, ::std::is_same
@@ -12,18 +13,23 @@ namespace stream
 {
     namespace detail
     {
-        #define SFPARENT StreamBase<typename InvokeResultT<::std::decay_t<Filter>, \
-                                                           const StreamValueT<S>&, const S&>::value_type, \
-                                    StreamFinitenessV<S>, StreamImpl>
+        template<typename S, typename Callable, typename StreamImpl = void>
+        class StreamFilter
+        {};
 
 
-        template<typename S, typename Filter, typename StreamImpl = void>
-        class StreamFilter : public SFPARENT
+        #define SFPARENT StreamBase<typename InvokeResultT<Filter<Callable, StreamFin>, \
+                                                           const StreamValueT<S>&, const S&, bool&>::value_type, \
+                                    StreamFinitenessV<S> | StreamFin, StreamImpl>
+
+
+        template<typename S, typename Callable, bool StreamFin, typename StreamImpl>
+        class StreamFilter<S, Filter<Callable, StreamFin>, StreamImpl> : public SFPARENT
         {
         public:
-            template<typename Callable>
-            StreamFilter(S &&stream, Callable &&filter)
-                : stream(::std::move(stream)), filter(::std::forward<Callable>(filter))
+            template<typename F>
+            StreamFilter(S &&stream, F &&filter)
+                : stream(::std::move(stream)), filter(::std::forward<F>(filter))
             {}
 
 
@@ -35,7 +41,8 @@ namespace stream
                     return { ::std::nullopt };
                 }
 
-                return filter(static_cast<const StreamValueT<S>&>(fromStream.value()), static_cast<const S&>(stream));
+                return filter(static_cast<const StreamValueT<S>&>(fromStream.value()), static_cast<const S&>(stream),
+                              end);
             }
 
         private:
@@ -43,19 +50,23 @@ namespace stream
 
 
             S stream;
-            ::std::decay_t<Filter> filter;
+            Filter<Callable, StreamFin> filter;
+            bool end = false;
 
 
             template<bool Fin = SFPARENT::IsFinite>
             ::std::enable_if_t<Fin, bool> isEndImpl() const
             {
-                return stream.isEnd();
-            };
+                if constexpr (StreamFin)
+                {
+                    return end;
+                }
+                else
+                {
+                    return stream.isEnd();
+                }
+            }
         };
-
-        template<typename S, typename Filter>
-        class StreamFilter<S, Filter, void>
-        {};
 
 
         #undef SFPARENT
