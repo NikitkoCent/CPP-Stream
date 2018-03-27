@@ -57,6 +57,7 @@ add_executable(unittesting include/traits.h
                            include/stream_traits.h
                            include/stream_visitors.h
                            include/filter.h
+                           include/is_filters_factory_for.h
                            include/detail/stream_impl.h
                            include/detail/traits_impl.h
                            include/detail/stream_base.h
@@ -64,6 +65,7 @@ add_executable(unittesting include/traits.h
                            include/detail/stream_traits_impl.h
                            include/detail/stream_filter.h
                            include/detail/filter_impl.h
+                           include/detail/is_filters_factory_for_impl.h
                            tests/stream.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 

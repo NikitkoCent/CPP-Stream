@@ -239,10 +239,86 @@ TEST(A, C)
 TEST(A, D)
 {
     stream::Stream(std::rand)
+    | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+    | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
     | get(10)
-    | print_to(std::cout);
+    | skip(1)
+    | print_to(std::cout, "\n");
 
     std::cout << std::endl;
 }
+
+TEST(A, E)
+{
+    int start = 0;
+
+    auto s = stream::Stream([start]() mutable { return start += 10; })
+    | map([](auto &&v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+    | map([](auto &&v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+    | get(10)
+    | skip(1)
+    | nth(5);
+
+    std::cout << s << std::endl;
+}
+
+
+TEST(A, F)
+{
+    int start = 0;
+
+    auto vector = stream::Stream([start]() mutable { return start = (start + 10) % 30; })
+             | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+             | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+             | get(10)
+             | to_vector();
+
+    for (const auto &v : vector)
+    {
+        std::cout << v << ' ';
+    }
+
+    std::cout << std::endl;
+}
+
+TEST(A, G)
+{
+    int start = 0;
+
+    auto vector = stream::Stream([start]() mutable { return start += 2; })
+                  | filter([](auto &&v) { return (v <= 20); })
+                  | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+                  | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+                  | get(10)
+                  | to_vector();
+
+    for (const auto &v : vector)
+    {
+        std::cout << v << ' ';
+    }
+
+    std::cout << std::endl;
+}
+
+
+TEST(A, H)
+{
+    int start = 0;
+
+    auto vector = stream::Stream([start]() mutable { return start += 2; })
+                  | filter([](auto &&v) { return (v <= 20); })
+                  | map([](auto &v) { std::cout << "MAP ^ 2" << std::endl; return v * v; })
+                  | map([](auto &v) { std::cout << "MAP ^ 3" << std::endl; return v * v * v; })
+                  | get(10)
+                  | to_vector();
+
+    for (const auto &v : vector)
+    {
+        std::cout << v << ' ';
+    }
+
+    std::cout << std::endl;
+}
+
 
 #undef LOG

@@ -7,7 +7,9 @@
 #include <cstddef>                      // ::std::size_t
 #include <optional>                     // ::std::optional
 #include <utility>                      // ::std::move, ::std::forward
-#include <stdexcept>
+#include <stdexcept>                    // ::std::out_of_range
+#include <type_traits>                  // ::std::enable_if_t
+#include <memory>                       // ::std::shared_ptr
 
 
 namespace stream
@@ -65,10 +67,12 @@ namespace stream
                 if (n > 0)
                 {
                     --n;
+                    end = (n == 0);
                     return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
                 }
 
                 end = true;
+
                 return ::std::optional<Type>{::std::nullopt};
             });
         }
@@ -131,17 +135,59 @@ namespace stream
                     auto result = stream.getNext();
                     if (result)
                     {
-                        if (index > 0)
+                        if (index == 0)
                         {
-                            --index;
+                            return *::std::move(result);
                         }
 
-                        return *::std::move(result);
+                        --index;
                     }
                 }
 
                 throw ::std::out_of_range("Out of Stream range");
             };
+        }
+
+
+        auto to_vector()
+        {
+            return [](auto &&stream) {
+                using Type = StreamValueT<decltype(stream)>;
+
+                ::std::vector<Type> result;
+                while (!stream.isEnd())
+                {
+                    auto value = stream.getNext();
+                    if (value)
+                    {
+                        result.emplace_back(*::std::move(value));
+                    }
+                }
+
+                return result;
+            };
+        }
+
+
+        template<typename Predicate>
+        auto filter(Predicate &&predicate)
+        {
+            return makeFilter<false>([predicate = ::std::forward<Predicate>(predicate)](auto &&value, auto &&stream, bool&) {
+                using Type = StreamValueT<decltype(stream)>;
+
+                if (predicate(static_cast<const RemoveCRefT<decltype(value)>&>(value)))
+                {
+                    return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
+                }
+
+                return ::std::optional<Type>{::std::nullopt};
+            });
+        }
+
+
+        auto group(::std::size_t n)
+        {
+
         }
     }
 }
