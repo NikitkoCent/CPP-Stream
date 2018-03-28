@@ -8,8 +8,7 @@
 #include <optional>                     // ::std::optional
 #include <utility>                      // ::std::move, ::std::forward
 #include <stdexcept>                    // ::std::out_of_range
-#include <type_traits>                  // ::std::enable_if_t
-#include <memory>                       // ::std::shared_ptr
+#include <type_traits>                  // ::std::enable_if_t, ::std::conditional, ::std::is_reference, ::std::remove_reference_t
 
 
 namespace stream
@@ -53,8 +52,12 @@ namespace stream
         template<typename Transform>
         auto map(Transform &&transform)
         {
-            return makeFilter<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto&&, bool&) mutable {
-                using Type = detail::InvokeResultT<::std::decay_t<Transform>, decltype(value)>;
+            return makeFilter<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto &&, bool&) mutable {
+                using ReturnType = detail::InvokeResultT<::std::decay_t<Transform>, decltype(value)>;
+                using Type = ::std::conditional_t<::std::is_reference<ReturnType>::value,
+                                                  ::std::reference_wrapper<::std::remove_reference_t<ReturnType>>,
+                                                  ReturnType>;
+
                 return ::std::optional<Type>{transform(::std::forward<decltype(value)>(value))};
             });
         }
@@ -174,7 +177,6 @@ namespace stream
         {
             return makeFilter<false>([predicate = ::std::forward<Predicate>(predicate)](auto &&value, auto &&stream, bool&) {
                 using Type = StreamValueT<decltype(stream)>;
-
                 if (predicate(static_cast<const RemoveCRefT<decltype(value)>&>(value)))
                 {
                     return ::std::optional<Type>{::std::forward<decltype(value)>(value)};

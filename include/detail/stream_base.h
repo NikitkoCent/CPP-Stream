@@ -22,17 +22,16 @@ namespace stream
         class StreamBase
         {
         public:
-            static_assert(!::std::is_reference<T>::value, "Stream of references isn't allowed");
-
-
-            using Type = T;
+            using Type = ::std::conditional_t<::std::is_reference<T>::value,
+                                              ::std::reference_wrapper<::std::remove_reference_t<T>>,
+                                              T>;
             static constexpr bool IsFinite = Finiteness;
 
 
             template<typename Filter, typename ::std::enable_if_t<IsStreamFilterFor<Filter, StreamImpl>::value>* = nullptr>
             auto operator|(Filter &&filter)
             {
-                using V = typename InvokeResultT<::std::decay_t<Filter>, const Type&, const StreamImpl&, bool&>::value_type;
+                using V = typename InvokeResultT<::std::decay_t<Filter>, Type&&, const StreamImpl&, bool&>::value_type;
                 return stream::Stream<V, StreamFilter<StreamImpl, Filter, void>>(::std::move(static_cast<StreamImpl&>(*this)),
                                                                                  ::std::forward<Filter>(filter));
             }

@@ -19,7 +19,7 @@ namespace stream
 
 
         #define SFPARENT StreamBase<typename InvokeResultT<Filter<Callable, StreamFin>, \
-                                                           const StreamValueT<S>&, const S&, bool&>::value_type, \
+                                                           StreamValueT<S>&&, const S&, bool&>::value_type, \
                                     StreamFinitenessV<S> | StreamFin, StreamImpl>
 
 
@@ -27,13 +27,15 @@ namespace stream
         class StreamFilter<S, Filter<Callable, StreamFin>, StreamImpl> : public SFPARENT
         {
         public:
+            using Type = typename SFPARENT::Type;
+
+
             template<typename F>
             StreamFilter(S &&stream, F &&filter)
                 : stream(::std::move(stream)), filter(::std::forward<F>(filter))
             {}
 
-
-            ::std::optional<typename SFPARENT::Type> getNext()
+            ::std::optional<Type> getNext()
             {
                 auto fromStream = stream.getNext();
                 if (!fromStream)
@@ -41,7 +43,7 @@ namespace stream
                     return { ::std::nullopt };
                 }
 
-                return filter(static_cast<const StreamValueT<S>&>(fromStream.value()), static_cast<const S&>(stream),
+                return filter(::std::move(fromStream).value(), static_cast<const S&>(stream),
                               end);
             }
 

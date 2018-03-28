@@ -58,11 +58,11 @@ namespace stream
         template<typename Callable, bool Fin, typename T1, typename T2>
         struct IsStreamFilterForImpl<Filter<Callable, Fin>, stream::Stream<T1,T2>,
                                      VoidT<::std::enable_if_t<::std::is_same<::std::optional<typename InvokeResultT<Filter<Callable, Fin>,
-                                                                                                                    const StreamValueT<stream::Stream<T1, T2>>&,
+                                                                                                                    StreamValueT<stream::Stream<T1, T2>>&&,
                                                                                                                     const stream::Stream<T1, T2>&,
                                                                                                                     bool&>::value_type>,
                                                                              InvokeResultT<Filter<Callable, Fin>,
-                                                                                           const StreamValueT<stream::Stream<T1, T2>>&,
+                                                                                           StreamValueT<stream::Stream<T1, T2>>&&,
                                                                                            const stream::Stream<T1, T2>&,
                                                                                            bool&>>::value>>
                                     > : ::std::true_type
