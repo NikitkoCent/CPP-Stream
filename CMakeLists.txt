@@ -73,7 +73,7 @@ target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 add_test(NAME do_unittests COMMAND unittesting)
 
 # ================================= TEST COVERAGE =======================================
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+#[[if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(${cmake-modules_SOURCE_DIR}/CodeCoverage.cmake)
 
     if (CMAKE_CXX_FLAGS_COVERAGE)
@@ -82,19 +82,23 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
                                   EXECUTABLE ctest
                                   DEPENDENCIES unittesting)
     endif()
-endif()
+endif()]]
 # ===============================  END TEST COVERAGE ====================================
 
 MESSAGE("Build type : ${CMAKE_BUILD_TYPE}")
 MESSAGE("Used compiler : ${CMAKE_CXX_COMPILER}")
-if (CMAKE_BUILD_TYPE EQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-elseif (CMAKE_BUILD_TYPE EQUAL "Release")
+    MESSAGE("Linker flags : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_DEBUG}")
+elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-elseif (CMAKE_BUILD_TYPE EQUAL "RelWithDebInfo")
+    MESSAGE("Linker flags : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-elseif (CMAKE_BUILD_TYPE EQUAL "MinSizeRel")
+    MESSAGE("Linker flags : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
+elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_MINSIZEREL}")
+    MESSAGE("Linker flags : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}")
 else()
-    MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS}")
+
 endif()

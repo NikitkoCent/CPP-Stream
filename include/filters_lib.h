@@ -25,7 +25,17 @@ namespace stream
                     auto val = stream.getNext();
                     if (val)
                     {
-                        oStream << val.value() << delim;
+                        oStream << val.value();
+                        break;
+                    }
+                }
+
+                while (!stream.isEnd())
+                {
+                    auto val = stream.getNext();
+                    if (val)
+                    {
+                        oStream << delim << val.value();
                     }
                 }
 

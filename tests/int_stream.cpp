@@ -1,5 +1,7 @@
 #include <stream.h>
 #include <filters_lib.h>
+#include <vector>
+#include <sstream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -8,19 +10,41 @@ using namespace stream;
 using namespace stream::filters;
 
 
-TEST(INT_STREAM, SKIP1)
+TEST(INT_STREAM, SKIP_0)
 {
-    stream::Stream{1, 2, 3} | skip(1) | print_to(::std::cout);
-    std::cout << std::endl;
+    std::ostringstream stream;
+
+    stream::Stream{1, 2, 3} | skip(0) | print_to(stream);
+    ASSERT_EQ(stream.str(), "1 2 3");
 }
 
-TEST(INT_STREAM, SKIP2)
+TEST(INT_STREAM, SKIP_1)
 {
+    std::ostringstream stream;
+
+    stream::Stream{1, 2, 3} | skip(1) | print_to(stream);
+    ASSERT_EQ(stream.str(), "2 3");
+}
+
+TEST(INT_STREAM, SKIP_ALL)
+{
+    std::ostringstream stream;
+
+    stream::Stream{1, 2, 3} | skip(3) | print_to(stream);
+    ASSERT_TRUE(stream.str().empty());
+}
+
+TEST(INT_STREAM, DOUBLE_SKIP)
+{
+    std::ostringstream stream;
+
     Stream a = Stream(1, 2, 3) | skip(1);
     Stream b = a | skip(1);
 
-    (b | print_to(std::cout)) << std::endl;
+    b | print_to(stream);
+    ASSERT_EQ(stream.str(), "3");
 }
+
 
 TEST(A, C)
 {
