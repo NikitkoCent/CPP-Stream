@@ -1,13 +1,13 @@
 #ifndef CPP_STREAM_STREAM_H
 #define CPP_STREAM_STREAM_H
 
-#include "detail/stream_base.h"     // StreamBase
-#include "detail/stream_impl.h"     // StreamImpl
-#include "detail/stream_filter.h"   // StreamFilter
-#include "traits.h"                 // ContainerTraits
-#include <initializer_list>         // ::std::initializer_list
-#include <vector>                   // ::std::vector
-#include <iterator>                 // ::std::iterator_traits
+#include "detail/stream_base.h"         // StreamBase
+#include "detail/stream_impl.h"         // StreamImpl
+#include "detail/stream_filter_impl.h"  // StreamFilter
+#include "traits.h"                     // ContainerTraits
+#include <initializer_list>             // ::std::initializer_list
+#include <vector>                       // ::std::vector
+#include <iterator>                     // ::std::iterator_traits
 
 
 namespace stream

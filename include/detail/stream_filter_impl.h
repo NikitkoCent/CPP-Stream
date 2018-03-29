@@ -1,5 +1,5 @@
-#ifndef CPP_STREAM_DETAIL_STREAM_FILTER_H
-#define CPP_STREAM_DETAIL_STREAM_FILTER_H
+#ifndef CPP_STREAM_DETAIL_STREAM_FILTER_IMPL_H
+#define CPP_STREAM_DETAIL_STREAM_FILTER_IMPL_H
 
 #include "stream_base.h"        // StreamBase
 #include "filter_impl.h"        // Filter
@@ -75,4 +75,4 @@ namespace stream
     }
 }
 
-#endif //CPP_STREAM_DETAIL_STREAM_FILTER_H
+#endif //CPP_STREAM_DETAIL_STREAM_FILTER_IMPL_H

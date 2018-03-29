@@ -1,11 +1,11 @@
-#ifndef CPP_STREAM_DETAIL_STREAM_H
-#define CPP_STREAM_DETAIL_STREAM_H
+#ifndef CPP_STREAM_DETAIL_STREAM_IMPL_H
+#define CPP_STREAM_DETAIL_STREAM_IMPL_H
 
 #include "stream_base.h"        // StreamBase
 #include "utility.h"            // VoidT
 #include "traits_impl.h"        // ContainerTraits
 #include "stream_traits_impl.h" // IsStreamFilterFor
-#include "stream_filter.h"      // StreamFilter
+#include "stream_filter_impl.h" // StreamFilter
 #include <optional>             // ::std::optional
 #include <utility>              // ::std::move, ::std::forward, ::std::declval
 #include <type_traits>          // ::std::enable_if_t, ::std::is_reference, ::std::is_const
@@ -208,4 +208,4 @@ namespace stream
     }
 }
 
-#endif //CPP_STREAM_DETAIL_STREAM_H
+#endif //CPP_STREAM_DETAIL_STREAM_IMPL_H

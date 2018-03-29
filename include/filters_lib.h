@@ -1,5 +1,5 @@
-#ifndef CPP_STREAM_STREAM_VISITORS_H
-#define CPP_STREAM_STREAM_VISITORS_H
+#ifndef CPP_STREAM_FILTERS_LIB_H
+#define CPP_STREAM_FILTERS_LIB_H
 
 #include "stream_traits.h"              // StreamValueT
 #include "traits.h"                     // detail::InvokeResultT
@@ -9,11 +9,12 @@
 #include <utility>                      // ::std::move, ::std::forward
 #include <stdexcept>                    // ::std::out_of_range
 #include <type_traits>                  // ::std::enable_if_t, ::std::conditional, ::std::is_reference, ::std::remove_reference_t
+#include <vector>                       // ::std::vector
 
 
 namespace stream
 {
-    namespace visitors
+    namespace filters
     {
         template<typename OStream>
         auto print_to(OStream &oStream, const char *delim = " ")
@@ -33,7 +34,7 @@ namespace stream
         }
 
 
-        auto skip(::std::size_t amount)
+        inline auto skip(::std::size_t amount)
         {
             return makeFilter<false>([amount](auto &&value, auto &&stream, bool&) mutable {
                 using Type = stream::StreamValueT<decltype(stream)>;
@@ -63,7 +64,7 @@ namespace stream
         }
 
 
-        auto get(::std::size_t n)
+        inline auto get(::std::size_t n)
         {
             return makeFilter<true>([n](auto &&value, auto &&stream, bool &end) mutable {
                 using Type = stream::StreamValueT<decltype(stream)>;
@@ -124,13 +125,13 @@ namespace stream
         }
 
 
-        auto sum()
+        inline auto sum()
         {
             return reduce([](auto &&v1, auto &&v2) { return v1 + v2; });
         }
 
 
-        auto nth(::std::size_t index)
+        inline auto nth(::std::size_t index)
         {
             return [index](auto &&stream) mutable {
                 while (!stream.isEnd())
@@ -152,7 +153,7 @@ namespace stream
         }
 
 
-        auto to_vector()
+        inline auto to_vector()
         {
             return [](auto &&stream) {
                 using Type = StreamValueT<decltype(stream)>;
@@ -221,4 +222,4 @@ namespace stream
     }
 }
 
-#endif //CPP_STREAM_STREAM_VISITORS_H
+#endif //CPP_STREAM_FILTERS_LIB_H
