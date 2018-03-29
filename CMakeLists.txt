@@ -100,5 +100,6 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_MINSIZEREL}")
     MESSAGE("Linker flags : ${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_MINSIZEREL}")
 else()
-
+    MESSAGE("Compiler flags : ${CMAKE_CXX_FLAGS}")
+    MESSAGE("Linker flags : ${CMAKE_EXE_LINKER_FLAGS}")
 endif()
