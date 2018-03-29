@@ -6,6 +6,7 @@
 namespace stream
 {
     using detail::RemoveCRefT;
+    using detail::RemoveCVRefT;
     using detail::ContainerTraits;
 }
 

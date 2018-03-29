@@ -17,16 +17,6 @@
 using namespace stream;
 using namespace stream::visitors;
 
-struct OnlyMovable
-{
-    OnlyMovable() { LOG; }
-    OnlyMovable(const OnlyMovable&) = delete;
-    OnlyMovable(OnlyMovable&&) { LOG; }
-
-    OnlyMovable& operator=(const OnlyMovable&) = delete;
-    OnlyMovable& operator=(OnlyMovable&&) { LOG; return *this; }
-};
-
 
 TEST(DEDUCTION_GUIDES_CONTAINER, RREF)
 {
@@ -53,7 +43,8 @@ TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST_RREF)
 
 TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST_CONST_RREF)
 {
-    const auto l = {1, 2, 3};
+    //const auto l = {1, 2, 3};
+    const std::initializer_list<int> l = {1, 2, 3};
     ASSERT_TRUE((std::is_same<decltype(l), const std::initializer_list<int>>::value));
     Stream stream(std::move(l));
     ASSERT_TRUE((std::is_same<decltype(stream), Stream<int, std::vector<int>>>::value));
@@ -69,7 +60,8 @@ TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST_LREF)
 
 TEST(DEDUCTION_GUIDES_CONTAINER, INITIALIZER_LIST_CONST_LREF)
 {
-    const auto l = {1, 2, 3};
+    //const auto l = {1, 2, 3};
+    const std::initializer_list<int> l = {1, 2, 3};
     ASSERT_TRUE((std::is_same<decltype(l), const std::initializer_list<int>>::value));
     Stream stream(l);
     ASSERT_TRUE((std::is_same<decltype(stream), Stream<int, std::vector<int>>>::value));
@@ -349,6 +341,19 @@ TEST(A, K)
     }
 
     std::cout << std::endl;
+}
+
+
+TEST(A, L)
+{
+    auto value = stream::Stream([a = 0]() mutable { return std::make_unique<int>(a++); })
+               | filter([](auto &&value) { return (*value > 2); })
+               | map([](auto &&value) { ++(*value); return std::move(value); })
+               | get(5)
+               | reduce([](auto &&init) { return *init; },
+                        [](auto &&v1, auto &&v2) { return v1 + *v2; });
+
+    std::cout << value << std::endl;
 }
 
 

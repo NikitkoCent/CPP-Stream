@@ -32,6 +32,9 @@ namespace stream
         template<typename T>
         using RemoveCRefT = ::std::remove_const_t<::std::remove_reference_t<T>>;
 
+        template<typename T>
+        using RemoveCVRefT = ::std::remove_cv_t<::std::remove_reference_t<T>>;
+
 
         template<typename C, typename = void>
         struct ContainerTraitsImpl

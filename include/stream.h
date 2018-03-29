@@ -12,7 +12,7 @@
 
 namespace stream
 {
-    template<typename T, typename Source = ::std::vector<T>>
+    template<typename T, typename Source = ::std::vector<::std::remove_cv_t<T>>>
     struct Stream : detail::StreamImpl<T, Source, Stream<T, Source>>
     {
         using detail::StreamImpl<T, Source, Stream<T, Source>>::StreamImpl;
