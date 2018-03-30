@@ -227,3 +227,24 @@ TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_GENERIC)
     ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | reduce(stringInit, stringReducer),
               "1 2 3 4 5 6 7 8 9 10");
 }
+
+
+TEST(FILTERS_INT_STREAM, SUM_EMPTY)
+{
+    ASSERT_EQ(stream::Stream(std::vector<int>{}) | sum(), 0);
+}
+
+TEST(FILTERS_INT_STREAM, SUM_SINGLE)
+{
+    ASSERT_EQ(stream::Stream(10) | sum(), 10);
+}
+
+TEST(FILTERS_INT_STREAM, SUM_DOUBLE)
+{
+    ASSERT_EQ(stream::Stream(45, -100) | sum(), -55);
+}
+
+TEST(FILTERS_INT_STREAM, SUM_GENERIC)
+{
+    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | sum(), 55);
+}
