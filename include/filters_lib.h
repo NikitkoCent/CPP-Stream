@@ -48,7 +48,6 @@ namespace stream
         {
             return makeFilter<false>([amount](auto &&value, auto &&stream, bool&) mutable {
                 using Type = stream::StreamValueT<decltype(stream)>;
-                //using Type = int;
 
                 if (amount > 0) {
                     --amount;

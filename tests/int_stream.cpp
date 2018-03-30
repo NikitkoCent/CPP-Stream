@@ -180,3 +180,50 @@ TEST(FILTERS_INT_STREAM, GET_OUT_OF_RANGE)
     stream::Stream(1, 2, 3, 4, 5) | get(6) | print_to(stream);
     ASSERT_EQ(stream.str(), "1 2 3 4 5");
 }
+
+
+auto sumReducer = [](auto &&v1, auto &&v2) { return v1 + v2; };
+
+TEST(FILTERS_INT_STREAM, REDUCE_EMPTY)
+{
+    ASSERT_EQ(stream::Stream(std::vector<int>{}) | reduce(sumReducer), 0);
+}
+
+TEST(FILTERS_INT_STREAM, REDUCE_SINGLE)
+{
+    ASSERT_EQ(stream::Stream(10) | reduce(sumReducer), 10);
+}
+
+TEST(FILTERS_INT_STREAM, REDUCE_DOUBLE)
+{
+    ASSERT_EQ(stream::Stream(45, -100) | reduce(sumReducer), -55);
+}
+
+TEST(FILTERS_INT_STREAM, REDUCE_GENERIC)
+{
+    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | reduce(sumReducer), 55);
+}
+
+auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(num)); };
+auto stringInit = [](auto &&num) { return std::to_string(num); };
+
+TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream(std::vector<int>{}) | reduce(stringInit, stringReducer)).empty());
+}
+
+TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_SINGLE)
+{
+    ASSERT_EQ(stream::Stream(10) | reduce(stringInit, stringReducer), "10");
+}
+
+TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_DOUBLE)
+{
+    ASSERT_EQ(stream::Stream(45, -100) | reduce(stringInit, stringReducer), "45 -100");
+}
+
+TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_GENERIC)
+{
+    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | reduce(stringInit, stringReducer),
+              "1 2 3 4 5 6 7 8 9 10");
+}
