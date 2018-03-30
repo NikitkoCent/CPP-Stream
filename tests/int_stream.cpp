@@ -98,3 +98,28 @@ TEST(FILTERS_INT_STREAM, SKIP_DOUBLE)
     b | print_to(stream);
     ASSERT_EQ(stream.str(), "3");
 }
+
+
+TEST(FILTERS_INT_STREAM, MAP_EMPTY)
+{
+    std::ostringstream stream;
+
+    stream::Stream(std::vector<int>{}) | map([](auto &&v){ return std::move(v); }) | print_to(stream);
+    ASSERT_TRUE(stream.str().empty());
+}
+
+TEST(FILTERS_INT_STREAM, MAP_1)
+{
+    std::ostringstream stream;
+
+    stream::Stream(15) | map([](auto &&v){ return v * v; }) | print_to(stream);
+    ASSERT_EQ(stream.str(), "225");
+}
+
+TEST(FILTERS_INT_STREAM, MAP_GENERIC)
+{
+    std::ostringstream stream;
+
+    stream::Stream(-1, 2, -3, 4, -5, 6, -7, 8, -9) | map([](auto &&v){ return v * v ;}) | print_to(stream);
+    ASSERT_EQ(stream.str(), "1 4 9 16 25 36 49 64 81");
+}
