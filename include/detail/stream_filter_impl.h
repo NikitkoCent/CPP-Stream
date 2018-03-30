@@ -61,6 +61,10 @@ namespace stream
             {
                 if constexpr (StreamFin)
                 {
+                    if constexpr (StreamFinitenessV<S>)
+                    {
+                        return stream.isEnd() | end;
+                    }
                     return end;
                 }
                 else
