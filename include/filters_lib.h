@@ -86,7 +86,6 @@ namespace stream
                 }
 
                 end = true;
-
                 return ::std::optional<Type>{::std::nullopt};
             });
         }

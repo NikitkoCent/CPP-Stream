@@ -123,3 +123,60 @@ TEST(FILTERS_INT_STREAM, MAP_GENERIC)
     stream::Stream(-1, 2, -3, 4, -5, 6, -7, 8, -9) | map([](auto &&v){ return v * v ;}) | print_to(stream);
     ASSERT_EQ(stream.str(), "1 4 9 16 25 36 49 64 81");
 }
+
+
+TEST(FILTERS_INT_STREAM, GET_0_EMPTY)
+{
+    std::ostringstream stream;
+
+    stream::Stream(std::vector<int>{}) | get(0) | print_to(stream);
+    ASSERT_TRUE(stream.str().empty());
+}
+
+TEST(FILTERS_INT_STREAM, GET_0_NOTEMPTY)
+{
+    std::ostringstream stream;
+
+    stream::Stream(1, 2, 3) | get(0) | print_to(stream);
+    ASSERT_TRUE(stream.str().empty());
+}
+
+TEST(FILTERS_INT_STREAM, GET_1_EMPTY)
+{
+    std::ostringstream stream;
+
+    stream::Stream(std::vector<int>{}) | get(1) | print_to(stream);
+    ASSERT_TRUE(stream.str().empty());
+}
+
+TEST(FILTERS_INT_STREAM, GET_1_NOTEMPTY)
+{
+    std::ostringstream stream;
+
+    stream::Stream(5, 2, 3) | get(1) | print_to(stream);
+    ASSERT_EQ(stream.str(), "5");
+}
+
+TEST(FILTERS_INT_STREAM, GET_1_FROM_SINGLE)
+{
+    std::ostringstream stream;
+
+    stream::Stream(5) | get(1) | print_to(stream);
+    ASSERT_EQ(stream.str(), "5");
+}
+
+TEST(FILTERS_INT_STREAM, GET_ALL)
+{
+    std::ostringstream stream;
+
+    stream::Stream(1, 2, 3, 4, 5) | get(5) | print_to(stream);
+    ASSERT_EQ(stream.str(), "1 2 3 4 5");
+}
+
+TEST(FILTERS_INT_STREAM, GET_OUT_OF_RANGE)
+{
+    std::ostringstream stream;
+
+    stream::Stream(1, 2, 3, 4, 5) | get(6) | print_to(stream);
+    ASSERT_EQ(stream.str(), "1 2 3 4 5");
+}
