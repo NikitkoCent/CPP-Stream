@@ -54,127 +54,83 @@ TEST(FILTERS_INT_STREAM, PRINT_TO_GENERIC)
 
 TEST(FILTERS_INT_STREAM, SKIP_0)
 {
-    std::ostringstream stream;
-
-    stream::Stream{1, 2, 3} | skip(0) | print_to(stream);
-    ASSERT_EQ(stream.str(), "1 2 3");
+    ASSERT_THAT((stream::Stream{1, 2, 3} | skip(0) | to_vector()), testing::ElementsAre(1, 2, 3));
 }
 
 TEST(FILTERS_INT_STREAM, SKIP_1)
 {
-    std::ostringstream stream;
-
-    stream::Stream{1, 2, 3} | skip(1) | print_to(stream);
-    ASSERT_EQ(stream.str(), "2 3");
+    ASSERT_THAT((stream::Stream{1, 2, 3} | skip(1) | to_vector()), testing::ElementsAre(2, 3));
 }
 
 TEST(FILTERS_INT_STREAM, SKIP_ALL)
 {
-    std::ostringstream stream;
-
-    stream::Stream{1, 2, 3} | skip(3) | print_to(stream);
-    ASSERT_TRUE(stream.str().empty());
+    ASSERT_TRUE((stream::Stream{1, 2, 3} | skip(3) | to_vector()).empty());
 }
 
 TEST(FILTERS_INT_STREAM, SKIP_ALL_BUT_ONE)
 {
-    std::ostringstream stream;
-
-    stream::Stream{1, 2, 3} | skip(2) | print_to(stream);
-    ASSERT_EQ(stream.str(), "3");
+    ASSERT_THAT((stream::Stream{1, 2, 3} | skip(2) | to_vector()), testing::ElementsAre(3));
 }
 
 TEST(FILTERS_INT_STREAM, SKIP_DOUBLE)
 {
-    std::ostringstream stream;
-
     Stream a = Stream(1, 2, 3) | skip(1);
     Stream b = a | skip(1);
 
-    b | print_to(stream);
-    ASSERT_EQ(stream.str(), "3");
+    ASSERT_THAT(b | to_vector(), testing::ElementsAre(3));
 }
 
 
 TEST(FILTERS_INT_STREAM, MAP_EMPTY)
 {
-    std::ostringstream stream;
-
-    stream::Stream<int>() | map([](auto &&v){ return std::move(v); }) | print_to(stream);
-    ASSERT_TRUE(stream.str().empty());
+    ASSERT_TRUE((stream::Stream<int>() | map([](auto &&v){ return std::move(v); }) | to_vector()).empty());
 }
 
 TEST(FILTERS_INT_STREAM, MAP_1)
 {
-    std::ostringstream stream;
-
-    stream::Stream(15) | map([](auto &&v){ return v * v; }) | print_to(stream);
-    ASSERT_EQ(stream.str(), "225");
+    ASSERT_THAT((stream::Stream(15) | map([](auto &&v){ return v * v; }) | to_vector()), testing::ElementsAre(225));
 }
 
 TEST(FILTERS_INT_STREAM, MAP_GENERIC)
 {
-    std::ostringstream stream;
-
-    stream::Stream(-1, 2, -3, 4, -5, 6, -7, 8, -9) | map([](auto &&v){ return v * v ;}) | print_to(stream);
-    ASSERT_EQ(stream.str(), "1 4 9 16 25 36 49 64 81");
+    ASSERT_THAT((stream::Stream(-1, 2, -3, 4, -5, 6, -7, 8, -9) | map([](auto &&v){ return v * v ;}) | to_vector()),
+                testing::ElementsAre(1, 4, 9, 16, 25, 36, 49, 64, 81));
 }
 
 
 TEST(FILTERS_INT_STREAM, GET_0_EMPTY)
 {
-    std::ostringstream stream;
-
-    stream::Stream<int>() | get(0) | print_to(stream);
-    ASSERT_TRUE(stream.str().empty());
+    ASSERT_TRUE((stream::Stream<int>() | get(0) | to_vector()).empty());
 }
 
 TEST(FILTERS_INT_STREAM, GET_0_NOTEMPTY)
 {
-    std::ostringstream stream;
-
-    stream::Stream(1, 2, 3) | get(0) | print_to(stream);
-    ASSERT_TRUE(stream.str().empty());
+    ASSERT_TRUE((stream::Stream(1, 2, 3) | get(0) | to_vector()).empty());
 }
 
 TEST(FILTERS_INT_STREAM, GET_1_EMPTY)
 {
-    std::ostringstream stream;
-
-    stream::Stream<int>() | get(1) | print_to(stream);
-    ASSERT_TRUE(stream.str().empty());
+    ASSERT_TRUE((stream::Stream<int>() | get(1) | to_vector()).empty());
 }
 
 TEST(FILTERS_INT_STREAM, GET_1_NOTEMPTY)
 {
-    std::ostringstream stream;
-
-    stream::Stream(5, 2, 3) | get(1) | print_to(stream);
-    ASSERT_EQ(stream.str(), "5");
+    ASSERT_THAT((stream::Stream(5, 2, 3) | get(1) | to_vector()), testing::ElementsAre(5));
 }
 
 TEST(FILTERS_INT_STREAM, GET_1_FROM_SINGLE)
 {
-    std::ostringstream stream;
-
-    stream::Stream(5) | get(1) | print_to(stream);
-    ASSERT_EQ(stream.str(), "5");
+    ASSERT_THAT((stream::Stream(5) | get(1) | to_vector()), testing::ElementsAre(5));
 }
 
 TEST(FILTERS_INT_STREAM, GET_ALL)
 {
-    std::ostringstream stream;
-
-    stream::Stream(1, 2, 3, 4, 5) | get(5) | print_to(stream);
-    ASSERT_EQ(stream.str(), "1 2 3 4 5");
+    ASSERT_THAT((stream::Stream(1, 2, 3, 4, 5) | get(5) | to_vector()), testing::ElementsAre(1, 2, 3, 4, 5));
 }
 
 TEST(FILTERS_INT_STREAM, GET_OUT_OF_RANGE)
 {
-    std::ostringstream stream;
-
-    stream::Stream(1, 2, 3, 4, 5) | get(6) | print_to(stream);
-    ASSERT_EQ(stream.str(), "1 2 3 4 5");
+    ASSERT_THAT((stream::Stream(1, 2, 3, 4, 5) | get(6) | to_vector()), testing::ElementsAre(1, 2, 3, 4, 5));
 }
 
 
@@ -295,4 +251,38 @@ TEST(FILTERS_INT_STREAM, TO_VECTOR_SINGLE)
 TEST(FILTERS_INT_STREAM, TO_VECTOR_GENERIC)
 {
     ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5) | to_vector(), testing::ElementsAre(1, 2, 3, 4, 5));
+}
+
+
+TEST(FILTERS_INT_STREAM, FILTER_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<int>() | filter([](auto &&) { return true; }) | to_vector()).empty());
+}
+
+TEST(FILTERS_INT_STREAM, FILTER_SINGLE_TO_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream(45) | filter([](auto &&) { return false; }) | to_vector()).empty());
+}
+
+TEST(FILTERS_INT_STREAM, FILTER_SINGLE_TO_SINGLE)
+{
+    ASSERT_THAT(stream::Stream(45) | filter([](auto &&) { return true; }) | to_vector(),
+                testing::ElementsAre(45));
+}
+
+TEST(FILTER_INT_STREAM, FILTER_GENERIC_TO_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&) { return false; }) | to_vector()).empty());
+}
+
+TEST(FILTER_INT_STREAM, FILTER_GENERIC_TO_ITSELF)
+{
+    ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&) { return true; }) | to_vector(),
+                testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8, 9));
+}
+
+TEST(FILTER_INT_STREAM, FILTER_GENERIC_ONLY_EVEN)
+{
+    ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&v) { return !(v % 2); }) | to_vector(),
+                testing::ElementsAre(2, 4, 6, 8));
 }
