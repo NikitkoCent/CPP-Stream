@@ -286,3 +286,68 @@ TEST(FILTER_INT_STREAM, FILTER_GENERIC_ONLY_EVEN)
     ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&v) { return !(v % 2); }) | to_vector(),
                 testing::ElementsAre(2, 4, 6, 8));
 }
+
+
+TEST(FILTER_INT_STREAM, GROUP_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<int>() | group(1) | to_vector()).empty());
+}
+
+TEST(FILTER_INT_STREAM, GROUP_SINGLE_BY_1)
+{
+    auto result = stream::Stream(45) | group(1) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_THAT(result[0], testing::ElementsAre(45));
+}
+
+TEST(FILTER_INT_STREAM, GROUP_SINGLE_BY_2)
+{
+    auto result = stream::Stream(45) | group(2) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_THAT(result[0], testing::ElementsAre(45));
+}
+
+TEST(FILTER_INT_STREAM, GROUP_GENERIC_BY_1)
+{
+    auto result = stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | group(1) | to_vector();
+
+    ASSERT_EQ(result.size(), 9U);
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_THAT(result[i], testing::ElementsAre(i + 1));
+    }
+}
+
+TEST(FILTER_INT_STREAM, GROUP_GENERIC_TO_FEW)
+{
+    auto result = stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | group(4) | to_vector();
+
+    ASSERT_EQ(result.size(), 3U);
+    ASSERT_THAT(result[0], testing::ElementsAre(1, 2, 3, 4));
+    ASSERT_THAT(result[1], testing::ElementsAre(5, 6, 7, 8));
+    ASSERT_THAT(result[2], testing::ElementsAre(9));
+}
+
+TEST(FILTER_INT_STREAM, GROUP_GENERIC_TO_ONE_SAME)
+{
+    auto result = stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | group(9) | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_THAT(result[0], testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8, 9));
+}
+
+TEST(FILTER_INT_STREAM, GROUP_GENERIC_TO_ONE_MORE1)
+{
+    auto result = stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | group(10) | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_THAT(result[0], testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8, 9));
+}
+
+TEST(FILTER_INT_STREAM, GROUP_GENERIC_TO_ONE_MORE2)
+{
+    auto result = stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | group(100) | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_THAT(result[0], testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8, 9));
+}
