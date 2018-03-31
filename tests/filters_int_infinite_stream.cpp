@@ -64,3 +64,20 @@ TEST(FILTERS_INT_INFINITE_STREAM, MAP2)
 {
     ASSERT_THAT(stream::Stream(Gen()) | map([](auto &&v){ return v * v; }) | nth(9), 900);
 }
+
+
+TEST(FILTERS_INT_INFINITE_STREAM, FILTER_TRUE)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | filter([](auto&&){ return true; }) | nth(0), 21);
+}
+
+TEST(FILTERS_INT_INFINITE_STREAM, FILTER_10)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | filter([](auto &&v){ return (v == 31); }) | nth(0), 31);
+}
+
+TEST(FILTERS_INT_INFINITE_STREAM, FILTER_ONLY_EVEN)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | filter([](auto &&v){ return !(v % 2); }) | get(10) | to_vector(),
+                testing::ElementsAre(22, 24, 26, 28, 30, 32, 34, 36, 38, 40));
+}
