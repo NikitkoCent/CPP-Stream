@@ -81,3 +81,20 @@ TEST(FILTERS_INT_INFINITE_STREAM, FILTER_ONLY_EVEN)
     ASSERT_THAT(stream::Stream(Gen()) | filter([](auto &&v){ return !(v % 2); }) | get(10) | to_vector(),
                 testing::ElementsAre(22, 24, 26, 28, 30, 32, 34, 36, 38, 40));
 }
+
+
+TEST(FILTERS_INT_INFINITE_STREAM, GROUP_1)
+{
+    auto result = stream::Stream(Gen()) | group(1) | get(10) | to_vector();
+    ASSERT_EQ(result.size(), 10U);
+    for (unsigned i = 0; i < result.size(); ++i)
+    {
+        ASSERT_THAT(result[i], testing::ElementsAre(21 + i));
+    }
+}
+
+TEST(FILTERS_INT_INFINITE_STREAM, GROUP_10)
+{
+    auto result = stream::Stream(Gen()) | group(10) | nth(5);
+    ASSERT_THAT(result, testing::ElementsAre(71, 72, 73, 74, 75, 76, 77, 78, 79, 80));
+}
