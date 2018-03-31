@@ -248,3 +248,39 @@ TEST(FILTERS_INT_STREAM, SUM_GENERIC)
 {
     ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | sum(), 55);
 }
+
+
+TEST(FILTERS_INT_STREAM, NTH_EMPTY)
+{
+    ASSERT_THROW(stream::Stream(std::vector<int>{}) | nth(0), std::out_of_range);
+}
+
+TEST(FILTERS_INT_STREAM, NTH_SINGLE)
+{
+    ASSERT_EQ(stream::Stream(125) | nth(0), 125);
+}
+
+TEST(FILTERS_INT_STREAM, NTH_GENERIC_FIRST)
+{
+    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(0), 1);
+}
+
+TEST(FILTERS_INT_STREAM, NTH_GENERIC_MIDDLE)
+{
+    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(3), 4);
+}
+
+TEST(FILTERS_INT_STREAM, NTH_GENERIC_LAST)
+{
+    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(6), 7);
+}
+
+TEST(FILTERS_INT_STREAM, NTH_GENERIC_OUT_OF_RANGE1)
+{
+    ASSERT_THROW(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(7), std::out_of_range);
+}
+
+TEST(FILTERS_INT_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
+{
+    ASSERT_THROW(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(100), std::out_of_range);
+}
