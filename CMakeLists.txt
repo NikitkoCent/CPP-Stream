@@ -67,13 +67,13 @@ add_executable(unittesting include/traits.h
                            include/detail/filter_impl.h
                            include/detail/is_filters_factory_for_impl.h
                            tests/stream_deduction_guides.cpp
-                           tests/int_stream.cpp)
+                           tests/filters_int_finite_stream.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)
 
 # ================================= TEST COVERAGE =======================================
-#[[if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     include(${cmake-modules_SOURCE_DIR}/CodeCoverage.cmake)
 
     if (CMAKE_CXX_FLAGS_COVERAGE)
@@ -82,7 +82,7 @@ add_test(NAME do_unittests COMMAND unittesting)
                                   EXECUTABLE ctest
                                   DEPENDENCIES unittesting)
     endif()
-endif()]]
+endif()
 # ===============================  END TEST COVERAGE ====================================
 
 MESSAGE("Build type : ${CMAKE_BUILD_TYPE}")
