@@ -280,3 +280,19 @@ TEST(FILTERS_INT_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
 {
     ASSERT_THROW(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(100), std::out_of_range);
 }
+
+
+TEST(FILTERS_INT_STREAM, TO_VECTOR_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<int>() | to_vector()).empty());
+}
+
+TEST(FILTERS_INT_STREAM, TO_VECTOR_SINGLE)
+{
+    ASSERT_THAT(stream::Stream(200) | to_vector(), testing::ElementsAre(200));
+}
+
+TEST(FILTERS_INT_STREAM, TO_VECTOR_GENERIC)
+{
+    ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5) | to_vector(), testing::ElementsAre(1, 2, 3, 4, 5));
+}
