@@ -23,8 +23,7 @@ TEST(FILTERS_INT_STREAM, PRINT_TO_EMPTY)
 {
     std::ostringstream stream;
 
-    std::vector<int> v;
-    stream::Stream(v) | print_to(stream);
+    stream::Stream<int>() | print_to(stream);
     ASSERT_TRUE(stream.str().empty());
 }
 
@@ -32,7 +31,6 @@ TEST(FILTERS_INT_STREAM, PRINT_TO_1)
 {
     std::ostringstream stream;
 
-    std::vector<int> v;
     stream::Stream(20) | print_to(stream);
     ASSERT_EQ(stream.str(), "20");
 }
@@ -41,7 +39,6 @@ TEST(FILTERS_INT_STREAM, PRINT_TO_2)
 {
     std::ostringstream stream;
 
-    std::vector<int> v;
     stream::Stream(1, 2) | print_to(stream);
     ASSERT_EQ(stream.str(), "1 2");
 }
@@ -50,7 +47,6 @@ TEST(FILTERS_INT_STREAM, PRINT_TO_GENERIC)
 {
     std::ostringstream stream;
 
-    std::vector<int> v;
     stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | print_to(stream);
     ASSERT_EQ(stream.str(), "1 2 3 4 5 6 7 8 9");
 }
@@ -104,7 +100,7 @@ TEST(FILTERS_INT_STREAM, MAP_EMPTY)
 {
     std::ostringstream stream;
 
-    stream::Stream(std::vector<int>{}) | map([](auto &&v){ return std::move(v); }) | print_to(stream);
+    stream::Stream<int>() | map([](auto &&v){ return std::move(v); }) | print_to(stream);
     ASSERT_TRUE(stream.str().empty());
 }
 
@@ -129,7 +125,7 @@ TEST(FILTERS_INT_STREAM, GET_0_EMPTY)
 {
     std::ostringstream stream;
 
-    stream::Stream(std::vector<int>{}) | get(0) | print_to(stream);
+    stream::Stream<int>() | get(0) | print_to(stream);
     ASSERT_TRUE(stream.str().empty());
 }
 
@@ -145,7 +141,7 @@ TEST(FILTERS_INT_STREAM, GET_1_EMPTY)
 {
     std::ostringstream stream;
 
-    stream::Stream(std::vector<int>{}) | get(1) | print_to(stream);
+    stream::Stream<int>() | get(1) | print_to(stream);
     ASSERT_TRUE(stream.str().empty());
 }
 
@@ -186,7 +182,7 @@ auto sumReducer = [](auto &&v1, auto &&v2) { return v1 + v2; };
 
 TEST(FILTERS_INT_STREAM, REDUCE_EMPTY)
 {
-    ASSERT_EQ(stream::Stream(std::vector<int>{}) | reduce(sumReducer), 0);
+    ASSERT_EQ(stream::Stream<int>() | reduce(sumReducer), 0);
 }
 
 TEST(FILTERS_INT_STREAM, REDUCE_SINGLE)
@@ -209,7 +205,7 @@ auto stringInit = [](auto &&num) { return std::to_string(num); };
 
 TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_EMPTY)
 {
-    ASSERT_TRUE((stream::Stream(std::vector<int>{}) | reduce(stringInit, stringReducer)).empty());
+    ASSERT_TRUE((stream::Stream<int>() | reduce(stringInit, stringReducer)).empty());
 }
 
 TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_SINGLE)
@@ -231,7 +227,7 @@ TEST(FILTERS_INT_STREAM, REDUCE_TO_STRING_GENERIC)
 
 TEST(FILTERS_INT_STREAM, SUM_EMPTY)
 {
-    ASSERT_EQ(stream::Stream(std::vector<int>{}) | sum(), 0);
+    ASSERT_EQ(stream::Stream<int>() | sum(), 0);
 }
 
 TEST(FILTERS_INT_STREAM, SUM_SINGLE)
@@ -252,7 +248,7 @@ TEST(FILTERS_INT_STREAM, SUM_GENERIC)
 
 TEST(FILTERS_INT_STREAM, NTH_EMPTY)
 {
-    ASSERT_THROW(stream::Stream(std::vector<int>{}) | nth(0), std::out_of_range);
+    ASSERT_THROW(stream::Stream<int>() | nth(0), std::out_of_range);
 }
 
 TEST(FILTERS_INT_STREAM, NTH_SINGLE)

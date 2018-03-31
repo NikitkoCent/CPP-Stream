@@ -31,6 +31,9 @@ namespace stream
             using Type = typename StreamBase<T, true, Stream>::Type;
 
 
+            StreamImpl() = default;
+
+
             StreamImpl(Container &&container)
                 : container(::std::move(container))
             {}
