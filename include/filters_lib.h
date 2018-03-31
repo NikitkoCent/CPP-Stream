@@ -198,24 +198,35 @@ namespace stream
 
         class group
         {
-        private:
-            ::std::size_t n;
-
         public:
             group(::std::size_t n) : n(n) {}
 
-            template<typename Stream>
+
+            template<typename Stream, typename ::std::enable_if_t<StreamFinitenessV<Stream>>* = nullptr>
+            auto createFilter()
+            {
+                using Type = StreamValueT<Stream>;
+
+                ::std::size_t n = this->n;
+                return makeFilter<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&stream, bool&) mutable {
+                    vec.emplace_back(::std::forward<decltype(value)>(value));
+
+                    if ((vec.size() == n) || stream.isEnd())
+                    {
+                        return ::std::optional<::std::vector<Type>>(::std::move(vec));
+                    }
+
+                    return ::std::optional<::std::vector<Type>>(::std::nullopt);
+                });
+            }
+
+            template<typename Stream, typename ::std::enable_if_t<!StreamFinitenessV<Stream>>* = nullptr>
             auto createFilter()
             {
                 using Type = StreamValueT<Stream>;
 
                 ::std::size_t n = this->n;
                 return makeFilter<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&, bool&) mutable {
-                    if (vec.size() == n)
-                    {
-                        return ::std::optional<::std::vector<Type>>(::std::move(vec));
-                    }
-
                     vec.emplace_back(::std::forward<decltype(value)>(value));
 
                     if (vec.size() == n)
@@ -226,6 +237,9 @@ namespace stream
                     return ::std::optional<::std::vector<Type>>(::std::nullopt);
                 });
             }
+
+        private:
+            ::std::size_t n;
         };
     }
 }
