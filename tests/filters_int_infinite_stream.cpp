@@ -53,3 +53,14 @@ TEST(FILTERS_INT_INFINITE_STREAM, SKIP_10)
 {
     ASSERT_EQ(stream::Stream(Gen()) | skip(10) | nth(0), 31);
 }
+
+
+TEST(FILTERS_INT_INFINITE_STREAM, MAP1)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | map([](auto &&v){ return v * v; }) | nth(0), 21 * 21);
+}
+
+TEST(FILTERS_INT_INFINITE_STREAM, MAP2)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | map([](auto &&v){ return v * v; }) | nth(9), 900);
+}

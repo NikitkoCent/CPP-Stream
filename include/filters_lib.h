@@ -142,21 +142,37 @@ namespace stream
         inline auto nth(::std::size_t index)
         {
             return [index](auto &&stream) mutable {
-                while (!stream.isEnd())
+                while (index > 0)
                 {
-                    auto result = stream.getNext();
-                    if (result)
+                    if constexpr (StreamFinitenessV<decltype(stream)>)
                     {
-                        if (index == 0)
+                        if (stream.isEnd())
                         {
-                            return *::std::move(result);
+                            throw ::std::out_of_range("Out of Stream range");
                         }
+                    }
 
+                    if (stream.getNext())
+                    {
                         --index;
                     }
                 }
 
-                throw ::std::out_of_range("Out of Stream range");
+                auto result = stream.getNext();
+                while (!result)
+                {
+                    if constexpr (StreamFinitenessV<decltype(stream)>)
+                    {
+                        if (stream.isEnd())
+                        {
+                            throw ::std::out_of_range("Out of Stream range");
+                        }
+                    }
+
+                    result = stream.getNext();
+                }
+
+                return *::std::move(result);
             };
         }
 
