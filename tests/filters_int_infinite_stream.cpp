@@ -98,3 +98,14 @@ TEST(FILTERS_INT_INFINITE_STREAM, GROUP_10)
     auto result = stream::Stream(Gen()) | group(10) | nth(5);
     ASSERT_THAT(result, testing::ElementsAre(71, 72, 73, 74, 75, 76, 77, 78, 79, 80));
 }
+
+
+TEST(FILTERS_INT_INFINITE_STREAM, NTH_0)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | nth(0), 21);
+}
+
+TEST(FILTERS_INT_INFINITE_STREAM, NTH_100)
+{
+    ASSERT_THAT(stream::Stream(Gen()) | nth(100), 121);
+}
