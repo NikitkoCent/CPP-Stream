@@ -30,7 +30,7 @@ namespace stream
 
     // Container guides
     template<typename Container>
-    Stream(Container&&) -> Stream<typename ContainerTraits<Container>::ValueType, Container>;
+    Stream(Container&&) -> Stream<typename ContainerTraits<Container>::ValueType, ::std::remove_reference_t<Container>>;
 
     template<typename T>
     Stream(::std::initializer_list<T>) -> Stream<T>;

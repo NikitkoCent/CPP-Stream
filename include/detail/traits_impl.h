@@ -46,16 +46,19 @@ namespace stream
         struct ContainerTraitsImpl<C, VoidT<decltype(::std::declval<C>().begin()),
                                             decltype(::std::declval<C>().end()),
                                             ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
-                                                                                 typename ::std::iterator_traits<typename C::const_iterator>::iterator_category>::value> >
+                                                                                 typename ::std::iterator_traits<typename C::iterator>::iterator_category>::value>,
+                                            ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
+                                                                                 typename ::std::iterator_traits<typename C::const_iterator>::iterator_category>::value>>
                                   >
         {
             static constexpr bool IsContainer = true;
-            using Iterator = typename C::const_iterator;
+            using Iterator = typename C::iterator;
+            using ConstIterator = typename C::const_iterator;
             using ValueType = typename C::value_type;
         };
 
         template<typename C>
-        struct ContainerTraits : ContainerTraitsImpl<RemoveCRefT<C>>
+        struct ContainerTraits : ContainerTraitsImpl<RemoveCVRefT<C>>
         {};
     }
 }

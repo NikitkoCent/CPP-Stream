@@ -49,14 +49,14 @@ namespace stream
             }
 
 
-            ::std::optional<::std::reference_wrapper<const Type>> getNext()
+            ::std::optional<Type> getNext()
             {
                 if (isEndImpl())
                 {
                     return { ::std::nullopt };
                 }
 
-                return ::std::cref(*iterator++);
+                return ::std::move(*iterator++);
             }
 
         protected:
@@ -72,7 +72,7 @@ namespace stream
             }
 
         private:
-            Container container;
+            mutable Container container;
             mutable typename ContainerTraits<Container>::Iterator iterator;
             mutable bool iteratorInitialized = false;
 
@@ -130,7 +130,7 @@ namespace stream
 
         private:
             ::std::reference_wrapper<const Container> container;
-            mutable typename ContainerTraits<Container>::Iterator iterator;
+            mutable typename ContainerTraits<Container>::ConstIterator iterator;
             mutable bool iteratorInitialized = false;
         };
 
