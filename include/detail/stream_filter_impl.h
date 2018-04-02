@@ -38,12 +38,18 @@ namespace stream
             ::std::optional<Type> getNext()
             {
                 auto fromStream = stream.getNext();
+                using CastTo = ::std::conditional_t<::std::is_convertible<decltype(fromStream.value()),
+                                                                          StreamValueT<S>&>::value,
+                                                    StreamValueT<S>&,
+                                                    const StreamValueT<S>&>;
+
+
                 if (!fromStream)
                 {
                     return { ::std::nullopt };
                 }
 
-                return filter(::std::move(fromStream).value(), static_cast<const S&>(stream),
+                return filter(::std::move(static_cast<CastTo>(fromStream.value())), static_cast<const S&>(stream),
                               end);
             }
 
