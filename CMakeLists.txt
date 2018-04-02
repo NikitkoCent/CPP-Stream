@@ -67,7 +67,13 @@ add_executable(unittesting include/traits.h
                            include/detail/filter_impl.h
                            include/detail/is_filters_factory_for_impl.h
                            tests/stream_deduction_guides.cpp
-                           tests/filters_int_finite_stream.cpp tests/filters_int_infinite_stream.cpp tests/filters_generic_int_stream.cpp tests/filters_move_only_finite_stream.cpp tests/filters_move_only_infinite_stream.cpp tests/filters_generic_move_only_stream.cpp)
+                           tests/filters_int_finite_stream.cpp
+                           tests/filters_int_infinite_stream.cpp
+                           tests/filters_generic_int_stream.cpp
+                           tests/filters_move_only_finite_stream.cpp
+                           tests/filters_move_only_infinite_stream.cpp
+                           tests/filters_generic_move_only_stream.cpp
+                           tests/noisy.h)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)
