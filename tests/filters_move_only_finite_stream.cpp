@@ -67,27 +67,6 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_DOUBLE)
     ASSERT_EQ(*result[0], 22);
 }
 
-TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_DOUBLE_REF)
-{
-    std::vector<std::unique_ptr<int>> v;
-    v.emplace_back(std::make_unique<int>(20));
-    v.emplace_back(std::make_unique<int>(21));
-    v.emplace_back(std::make_unique<int>(22));
-
-    Stream a = Stream(v) | skip(1);
-    Stream b = a | skip(1);
-
-    //auto result = b | to_vector();
-
-    /*ASSERT_EQ(result.size(), 1U);
-    ASSERT_EQ(*result[0], 22);
-
-    ASSERT_EQ(v.size(), 3U);
-    ASSERT_EQ(*v[0], 20);
-    ASSERT_EQ(*v[0], 21);
-    ASSERT_EQ(*v[0], 22);*/
-}
-
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_EMPTY)
 {
@@ -432,7 +411,8 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_GENERIC_ONLY_EVEN)
 }
 
 
-// all the next tests will fail with gcc 7 (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80654)
+// all the next tests will cause compile-time error with gcc 7 (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80654)
+#ifndef __GNUG__
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GROUP_EMPTY)
 {
     ASSERT_TRUE((stream::Stream<std::unique_ptr<int>>() | group(1) | to_vector()).empty());
@@ -564,3 +544,5 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GROUP_GENERIC_TO_ONE_MORE2)
                                                 testing::Pointee(8),
                                                 testing::Pointee(9)));
 }
+
+#endif // #ifndef __GNUG__
