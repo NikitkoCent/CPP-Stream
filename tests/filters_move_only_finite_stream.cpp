@@ -332,27 +332,34 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
 }
 
 
-//TEST(FILTERS_INT_FINITE_STREAM, TO_VECTOR_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream<int>() | to_vector()).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, TO_VECTOR_SINGLE)
-//{
-//    ASSERT_THAT(stream::Stream(200) | to_vector(), testing::ElementsAre(200));
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, TO_VECTOR_GENERIC)
-//{
-//    ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5) | to_vector(), testing::ElementsAre(1, 2, 3, 4, 5));
-//}
-//
-//
-//TEST(FILTERS_INT_FINITE_STREAM, FILTER_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream<int>() | filter([](auto &&) { return true; }) | to_vector()).empty());
-//}
-//
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, TO_VECTOR_EMPTY)
+{
+    ASSERT_TRUE((Stream<std::unique_ptr<int>>() | to_vector()).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, TO_VECTOR_SINGLE)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(200)) | to_vector(),
+                testing::ElementsAre(testing::Pointee(200)));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, TO_VECTOR_GENERIC)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(1),
+                       std::make_unique<int>(2),
+                       std::make_unique<int>(3),
+                       std::make_unique<int>(4),
+                       std::make_unique<int>(5)) | to_vector(),
+                testing::ElementsAre(testing::Pointee(1), testing::Pointee(2), testing::Pointee(3),
+                                     testing::Pointee(4), testing::Pointee(5)));
+}
+
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<std::unique_ptr<int>>() | filter([](auto &&) { return true; }) | to_vector()).empty());
+}
+
 //TEST(FILTERS_INT_FINITE_STREAM, FILTER_SINGLE_TO_EMPTY)
 //{
 //    ASSERT_TRUE((stream::Stream(45) | filter([](auto &&) { return false; }) | to_vector()).empty());
