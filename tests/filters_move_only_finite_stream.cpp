@@ -14,9 +14,9 @@ using namespace stream::filters;
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_0)
 {
-    auto result = stream::Stream(std::make_unique<int>(20),
-                                 std::make_unique<int>(21),
-                                 std::make_unique<int>(22)) | skip(0) | to_vector();
+    auto result = Stream(std::make_unique<int>(20),
+                         std::make_unique<int>(21),
+                         std::make_unique<int>(22)) | skip(0) | to_vector();
 
     ASSERT_EQ(result.size(), 3U);
     ASSERT_EQ(*result[0], 20);
@@ -26,9 +26,9 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_0)
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_1)
 {
-    auto result = stream::Stream(std::make_unique<int>(20),
-                                 std::make_unique<int>(21),
-                                 std::make_unique<int>(22)) | skip(1) | to_vector();
+    auto result = Stream(std::make_unique<int>(20),
+                         std::make_unique<int>(21),
+                         std::make_unique<int>(22)) | skip(1) | to_vector();
 
     ASSERT_EQ(result.size(), 2U);
     ASSERT_EQ(*result[0], 21);
@@ -37,14 +37,18 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_1)
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_ALL)
 {
-    ASSERT_TRUE((stream::Stream{1, 2, 3} | skip(3) | to_vector()).empty());
+    ASSERT_TRUE((stream::Stream(std::make_unique<int>(1),
+                                std::make_unique<int>(2),
+                                std::make_unique<int>(3))
+                 | skip(3)
+                 | to_vector()).empty());
 }
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_ALL_BUT_ONE)
 {
-    auto result = stream::Stream(std::make_unique<int>(20),
-                                 std::make_unique<int>(21),
-                                 std::make_unique<int>(22)) | skip(2) | to_vector();
+    auto result = Stream(std::make_unique<int>(20),
+                         std::make_unique<int>(21),
+                         std::make_unique<int>(22)) | skip(2) | to_vector();
 
     ASSERT_EQ(result.size(), 1U);
     ASSERT_EQ(*result[0], 22);
@@ -87,14 +91,14 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_DOUBLE_REF)
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_EMPTY)
 {
-    ASSERT_TRUE((stream::Stream<std::unique_ptr<int>>()
+    ASSERT_TRUE((Stream<std::unique_ptr<int>>()
                  | map([](auto &&v){ return std::move(v); })
                  | to_vector()).empty());
 }
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_1)
 {
-    auto vec = stream::Stream(std::make_unique<int>(15))
+    auto vec = Stream(std::make_unique<int>(15))
                | map([](auto &&v){ *v = *v * *v; return std::move(v); })
                | to_vector();
 
@@ -104,66 +108,93 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_1)
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_GENERIC)
 {
-    auto vec = stream::Stream(std::make_unique<int>(-1),
-                              std::make_unique<int>(2),
-                              std::make_unique<int>(-3),
-                              std::make_unique<int>(4),
-                              std::make_unique<int>(-5),
-                              std::make_unique<int>(6),
-                              std::make_unique<int>(-7),
-                              std::make_unique<int>(8),
-                              std::make_unique<int>(-9))
+    auto vec = Stream(std::make_unique<int>(-1),
+                      std::make_unique<int>(2),
+                      std::make_unique<int>(-3),
+                      std::make_unique<int>(4),
+                      std::make_unique<int>(-5),
+                      std::make_unique<int>(6),
+                      std::make_unique<int>(-7),
+                      std::make_unique<int>(8),
+                      std::make_unique<int>(-9))
                | map([](auto &&v){ *v =  *v * *v ; return std::move(v); })
                | to_vector();
 
     ASSERT_EQ(vec.size(), 9U);
-    ASSERT_EQ(*vec[0], 1);
-    ASSERT_EQ(*vec[1], 4);
-    ASSERT_EQ(*vec[2], 9);
-    ASSERT_EQ(*vec[3], 16);
-    ASSERT_EQ(*vec[4], 25);
-    ASSERT_EQ(*vec[5], 36);
-    ASSERT_EQ(*vec[6], 49);
-    ASSERT_EQ(*vec[7], 64);
-    ASSERT_EQ(*vec[8], 81);
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(*vec[i], (i + 1) * (i + 1));
+    }
 }
 
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_0_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream<int>() | get(0) | to_vector()).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_0_NOTEMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream(1, 2, 3) | get(0) | to_vector()).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_1_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream<int>() | get(1) | to_vector()).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_1_NOTEMPTY)
-//{
-//    ASSERT_THAT((stream::Stream(5, 2, 3) | get(1) | to_vector()), testing::ElementsAre(5));
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_1_FROM_SINGLE)
-//{
-//    ASSERT_THAT((stream::Stream(5) | get(1) | to_vector()), testing::ElementsAre(5));
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_ALL)
-//{
-//    ASSERT_THAT((stream::Stream(1, 2, 3, 4, 5) | get(5) | to_vector()), testing::ElementsAre(1, 2, 3, 4, 5));
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, GET_OUT_OF_RANGE)
-//{
-//    ASSERT_THAT((stream::Stream(1, 2, 3, 4, 5) | get(6) | to_vector()), testing::ElementsAre(1, 2, 3, 4, 5));
-//}
-//
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_0_EMPTY)
+{
+    ASSERT_TRUE((Stream<std::unique_ptr<int>>() | get(0) | to_vector()).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_0_NOTEMPTY)
+{
+    ASSERT_TRUE((stream::Stream(std::make_unique<int>(1),
+                                std::make_unique<int>(2),
+                                std::make_unique<int>(3)) | get(0) | to_vector()).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_1_EMPTY)
+{
+    ASSERT_TRUE((Stream<std::unique_ptr<int>>() | get(1) | to_vector()).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_1_NOTEMPTY)
+{
+    auto vec = Stream(std::make_unique<int>(5),
+                      std::make_unique<int>(2),
+                      std::make_unique<int>(3)) | get(1) | to_vector();
+
+    ASSERT_EQ(vec.size(), 1U);
+    ASSERT_EQ(*vec[0], 5);
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_1_FROM_SINGLE)
+{
+    auto vec = Stream(std::make_unique<int>(5))
+               | get(1)
+               | to_vector();
+
+    ASSERT_EQ(vec.size(), 1U);
+    ASSERT_EQ(*vec[0], 5);
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_ALL)
+{
+    auto vec = Stream(std::make_unique<int>(1),
+                      std::make_unique<int>(2),
+                      std::make_unique<int>(3),
+                      std::make_unique<int>(4),
+                      std::make_unique<int>(5)) | get(5) | to_vector();
+
+    ASSERT_EQ(vec.size(), 5U);
+    for (int i = 0; i < 5; ++i)
+    {
+        ASSERT_EQ(*vec[i], i + 1);
+    }
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_OUT_OF_RANGE)
+{
+    auto vec = Stream(std::make_unique<int>(1),
+                      std::make_unique<int>(2),
+                      std::make_unique<int>(3),
+                      std::make_unique<int>(4),
+                      std::make_unique<int>(5)) | get(6) | to_vector();
+
+    ASSERT_EQ(vec.size(), 5U);
+    for (int i = 0; i < 5; ++i)
+    {
+        ASSERT_EQ(*vec[i], i + 1);
+    }
+}
+
 //
 //auto sumReducer = [](auto &&v1, auto &&v2) { return v1 + v2; };
 //
