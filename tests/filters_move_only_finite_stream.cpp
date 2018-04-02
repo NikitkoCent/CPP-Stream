@@ -412,7 +412,7 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_GENERIC_ONLY_EVEN)
 
 
 // all the next tests will cause compile-time error with gcc 7 (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80654)
-#ifndef __GNUG__
+#if !defined(__GNUG__) || defined(__clang__)
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GROUP_EMPTY)
 {
     ASSERT_TRUE((stream::Stream<std::unique_ptr<int>>() | group(1) | to_vector()).empty());
@@ -545,4 +545,4 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GROUP_GENERIC_TO_ONE_MORE2)
                                                 testing::Pointee(9)));
 }
 
-#endif // #ifndef __GNUG__
+#endif // #if !defined(__GNUG__) || defined(__clang__)
