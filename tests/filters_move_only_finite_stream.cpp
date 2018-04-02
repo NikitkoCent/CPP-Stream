@@ -195,53 +195,76 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_OUT_OF_RANGE)
     }
 }
 
-//
-//auto sumReducer = [](auto &&v1, auto &&v2) { return v1 + v2; };
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_EMPTY)
-//{
-//    ASSERT_EQ(stream::Stream<int>() | reduce(sumReducer), 0);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_SINGLE)
-//{
-//    ASSERT_EQ(stream::Stream(10) | reduce(sumReducer), 10);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_DOUBLE)
-//{
-//    ASSERT_EQ(stream::Stream(45, -100) | reduce(sumReducer), -55);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_GENERIC)
-//{
-//    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | reduce(sumReducer), 55);
-//}
-//
-//auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(num)); };
-//auto stringInit = [](auto &&num) { return std::to_string(num); };
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_TO_STRING_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream<int>() | reduce(stringInit, stringReducer)).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_TO_STRING_SINGLE)
-//{
-//    ASSERT_EQ(stream::Stream(10) | reduce(stringInit, stringReducer), "10");
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_TO_STRING_DOUBLE)
-//{
-//    ASSERT_EQ(stream::Stream(45, -100) | reduce(stringInit, stringReducer), "45 -100");
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, REDUCE_TO_STRING_GENERIC)
-//{
-//    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | reduce(stringInit, stringReducer),
-//              "1 2 3 4 5 6 7 8 9 10");
-//}
-//
+
+auto sumReducer = [](auto &&v1, auto &&v2) { *v1 = *v1 + *v2; return std::move(v1); };
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_EMPTY)
+{
+    ASSERT_EQ(Stream<std::unique_ptr<int>>() | reduce(sumReducer), nullptr);
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_SINGLE)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(10)) | reduce(sumReducer), testing::Pointee(10));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_DOUBLE)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(45),
+                       std::make_unique<int>(-100))
+                | reduce(sumReducer), testing::Pointee(-55));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_GENERIC)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(1),
+                       std::make_unique<int>(2),
+                       std::make_unique<int>(3),
+                       std::make_unique<int>(4),
+                       std::make_unique<int>(5),
+                       std::make_unique<int>(6),
+                       std::make_unique<int>(7),
+                       std::make_unique<int>(8),
+                       std::make_unique<int>(9),
+                       std::make_unique<int>(10))
+                | reduce(sumReducer), testing::Pointee(55));
+}
+
+auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(*num)); };
+auto stringInit = [](auto &&num) { return std::to_string(*num); };
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_TO_STRING_EMPTY)
+{
+    ASSERT_TRUE((Stream<std::unique_ptr<int>>() | reduce(stringInit, stringReducer)).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_TO_STRING_SINGLE)
+{
+    ASSERT_EQ(Stream(std::make_unique<int>(10)) | reduce(stringInit, stringReducer), "10");
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_TO_STRING_DOUBLE)
+{
+    ASSERT_EQ(Stream(std::make_unique<int>(45),
+                     std::make_unique<int>(-100))
+              | reduce(stringInit, stringReducer), "45 -100");
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_TO_STRING_GENERIC)
+{
+    ASSERT_EQ(Stream(std::make_unique<int>(1),
+                       std::make_unique<int>(2),
+                       std::make_unique<int>(3),
+                       std::make_unique<int>(4),
+                       std::make_unique<int>(5),
+                       std::make_unique<int>(6),
+                       std::make_unique<int>(7),
+                       std::make_unique<int>(8),
+                       std::make_unique<int>(9),
+                       std::make_unique<int>(10))
+                | reduce(stringInit, stringReducer), "1 2 3 4 5 6 7 8 9 10");
+}
+
 //
 //TEST(FILTERS_INT_FINITE_STREAM, SUM_EMPTY)
 //{
