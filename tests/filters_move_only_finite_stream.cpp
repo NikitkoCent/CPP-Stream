@@ -360,35 +360,78 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_EMPTY)
     ASSERT_TRUE((stream::Stream<std::unique_ptr<int>>() | filter([](auto &&) { return true; }) | to_vector()).empty());
 }
 
-//TEST(FILTERS_INT_FINITE_STREAM, FILTER_SINGLE_TO_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream(45) | filter([](auto &&) { return false; }) | to_vector()).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, FILTER_SINGLE_TO_SINGLE)
-//{
-//    ASSERT_THAT(stream::Stream(45) | filter([](auto &&) { return true; }) | to_vector(),
-//                testing::ElementsAre(45));
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, FILTER_GENERIC_TO_EMPTY)
-//{
-//    ASSERT_TRUE((stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&) { return false; }) | to_vector()).empty());
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, FILTER_GENERIC_TO_ITSELF)
-//{
-//    ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&) { return true; }) | to_vector(),
-//                testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8, 9));
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, FILTER_GENERIC_ONLY_EVEN)
-//{
-//    ASSERT_THAT(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | filter([](auto &&v) { return !(v % 2); }) | to_vector(),
-//                testing::ElementsAre(2, 4, 6, 8));
-//}
-//
-//
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_SINGLE_TO_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream(std::make_unique<int>(45))
+                 | filter([](auto &&) { return false; }) | to_vector()).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_SINGLE_TO_SINGLE)
+{
+    ASSERT_THAT(stream::Stream(std::make_unique<int>(45))
+                | filter([](auto &&) { return true; }) | to_vector(),
+                testing::ElementsAre(testing::Pointee(45)));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_GENERIC_TO_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream(std::make_unique<int>(1),
+                                std::make_unique<int>(2),
+                                std::make_unique<int>(3),
+                                std::make_unique<int>(4),
+                                std::make_unique<int>(5),
+                                std::make_unique<int>(6),
+                                std::make_unique<int>(7),
+                                std::make_unique<int>(8),
+                                std::make_unique<int>(9))
+                 | filter([](auto &&) { return false; })
+                 | to_vector()).empty());
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_GENERIC_TO_ITSELF)
+{
+    ASSERT_THAT(stream::Stream(std::make_unique<int>(1),
+                               std::make_unique<int>(2),
+                               std::make_unique<int>(3),
+                               std::make_unique<int>(4),
+                               std::make_unique<int>(5),
+                               std::make_unique<int>(6),
+                               std::make_unique<int>(7),
+                               std::make_unique<int>(8),
+                               std::make_unique<int>(9))
+                | filter([](auto &&) { return true; })
+                | to_vector(),
+                testing::ElementsAre(testing::Pointee(1),
+                                     testing::Pointee(2),
+                                     testing::Pointee(3),
+                                     testing::Pointee(4),
+                                     testing::Pointee(5),
+                                     testing::Pointee(6),
+                                     testing::Pointee(7),
+                                     testing::Pointee(8),
+                                     testing::Pointee(9)));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, FILTER_GENERIC_ONLY_EVEN)
+{
+    ASSERT_THAT(stream::Stream(std::make_unique<int>(1),
+                               std::make_unique<int>(2),
+                               std::make_unique<int>(3),
+                               std::make_unique<int>(4),
+                               std::make_unique<int>(5),
+                               std::make_unique<int>(6),
+                               std::make_unique<int>(7),
+                               std::make_unique<int>(8),
+                               std::make_unique<int>(9))
+                | filter([](auto &&v) { return (*v % 2 == 0); })
+                | to_vector(),
+                testing::ElementsAre(testing::Pointee(2),
+                                     testing::Pointee(4),
+                                     testing::Pointee(6),
+                                     testing::Pointee(8)));
+}
+
+
 //TEST(FILTERS_INT_FINITE_STREAM, GROUP_EMPTY)
 //{
 //    ASSERT_TRUE((stream::Stream<int>() | group(1) | to_vector()).empty());
