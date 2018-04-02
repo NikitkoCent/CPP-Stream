@@ -262,67 +262,76 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_TO_STRING_GENERIC)
                        std::make_unique<int>(8),
                        std::make_unique<int>(9),
                        std::make_unique<int>(10))
-                | reduce(stringInit, stringReducer), "1 2 3 4 5 6 7 8 9 10");
+              | reduce(stringInit, stringReducer), "1 2 3 4 5 6 7 8 9 10");
 }
 
-//
-//TEST(FILTERS_INT_FINITE_STREAM, SUM_EMPTY)
-//{
-//    ASSERT_EQ(stream::Stream<int>() | sum(), 0);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, SUM_SINGLE)
-//{
-//    ASSERT_EQ(stream::Stream(10) | sum(), 10);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, SUM_DOUBLE)
-//{
-//    ASSERT_EQ(stream::Stream(45, -100) | sum(), -55);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, SUM_GENERIC)
-//{
-//    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | sum(), 55);
-//}
-//
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_EMPTY)
-//{
-//    ASSERT_THROW(stream::Stream<int>() | nth(0), std::out_of_range);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_SINGLE)
-//{
-//    ASSERT_EQ(stream::Stream(125) | nth(0), 125);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_GENERIC_FIRST)
-//{
-//    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(0), 1);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_GENERIC_MIDDLE)
-//{
-//    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(3), 4);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_GENERIC_LAST)
-//{
-//    ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(6), 7);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE1)
-//{
-//    ASSERT_THROW(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(7), std::out_of_range);
-//}
-//
-//TEST(FILTERS_INT_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
-//{
-//    ASSERT_THROW(stream::Stream(1, 2, 3, 4, 5, 6, 7) | nth(100), std::out_of_range);
-//}
-//
-//
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_EMPTY)
+{
+    ASSERT_THROW(Stream<std::unique_ptr<int>>() | nth(0), std::out_of_range);
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_SINGLE)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(125)) | nth(0), testing::Pointee(125));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_GENERIC_FIRST)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(1),
+                       std::make_unique<int>(2),
+                       std::make_unique<int>(3),
+                       std::make_unique<int>(4),
+                       std::make_unique<int>(5),
+                       std::make_unique<int>(6),
+                       std::make_unique<int>(7)) | nth(0), testing::Pointee(1));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_GENERIC_MIDDLE)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(1),
+                       std::make_unique<int>(2),
+                       std::make_unique<int>(3),
+                       std::make_unique<int>(4),
+                       std::make_unique<int>(5),
+                       std::make_unique<int>(6),
+                       std::make_unique<int>(7)) | nth(3), testing::Pointee(4));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_GENERIC_LAST)
+{
+    ASSERT_THAT(Stream(std::make_unique<int>(1),
+                       std::make_unique<int>(2),
+                       std::make_unique<int>(3),
+                       std::make_unique<int>(4),
+                       std::make_unique<int>(5),
+                       std::make_unique<int>(6),
+                       std::make_unique<int>(7)) | nth(6), testing::Pointee(7));
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE1)
+{
+    ASSERT_THROW(stream::Stream(std::make_unique<int>(1),
+                                std::make_unique<int>(2),
+                                std::make_unique<int>(3),
+                                std::make_unique<int>(4),
+                                std::make_unique<int>(5),
+                                std::make_unique<int>(6),
+                                std::make_unique<int>(7)) | nth(7), std::out_of_range);
+}
+
+TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
+{
+    ASSERT_THROW(stream::Stream(std::make_unique<int>(1),
+                                std::make_unique<int>(2),
+                                std::make_unique<int>(3),
+                                std::make_unique<int>(4),
+                                std::make_unique<int>(5),
+                                std::make_unique<int>(6),
+                                std::make_unique<int>(7)) | nth(100), std::out_of_range);
+}
+
+
 //TEST(FILTERS_INT_FINITE_STREAM, TO_VECTOR_EMPTY)
 //{
 //    ASSERT_TRUE((stream::Stream<int>() | to_vector()).empty());
