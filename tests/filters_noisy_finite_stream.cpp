@@ -294,3 +294,80 @@ TEST(FILTERS_NOISY_FINITE_STREAM, SUM_GENERIC)
     ASSERT_EQ(result.copyCount, 0);
     ASSERT_EQ(result.value, 55);
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_EMPTY)
+{
+    ASSERT_THROW(stream::Stream<Noisy>() | nth(0), std::out_of_range);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_SINGLE)
+{
+    auto result = Stream(Noisy(125)) | nth(0);
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 125);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_GENERIC_FIRST)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7)) | nth(0);
+
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 1);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_GENERIC_MIDDLE)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7)) | nth(3);
+
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 4);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_GENERIC_LAST)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7)) | nth(6);
+
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 7);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE1)
+{
+    ASSERT_THROW(stream::Stream(Noisy(1),
+                                Noisy(2),
+                                Noisy(3),
+                                Noisy(4),
+                                Noisy(5),
+                                Noisy(6),
+                                Noisy(7)) | nth(7), std::out_of_range);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
+{
+    ASSERT_THROW(stream::Stream(Noisy(1),
+                                Noisy(2),
+                                Noisy(3),
+                                Noisy(4),
+                                Noisy(5),
+                                Noisy(6),
+                                Noisy(7)) | nth(100), std::out_of_range);
+}
