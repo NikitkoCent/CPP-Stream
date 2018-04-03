@@ -125,3 +125,57 @@ TEST(FILTERS_NOISY_FINITE_STREAM, MAP_GENERIC)
         ASSERT_EQ(result[i].value, (i + 1) * (i + 1));
     }
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_0_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<Noisy>() | get(0) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_0_NOTEMPTY)
+{
+    ASSERT_TRUE((stream::Stream(Noisy(1), Noisy(2), Noisy(3)) | get(0) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_1_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<Noisy>() | get(1) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_1_NOTEMPTY)
+{
+    auto result = Stream(Noisy(5), Noisy(2), Noisy(3)) | get(1) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].copyCount, 0);
+    ASSERT_EQ(result[0].value, 5);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_1_FROM_SINGLE)
+{
+    auto result = Stream(Noisy(5)) | get(1) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].copyCount, 0);
+    ASSERT_EQ(result[0].value, 5);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_ALL)
+{
+    auto result = Stream(Noisy(1), Noisy(2), Noisy(3), Noisy(4), Noisy(5)) | get(5) | to_vector();
+    ASSERT_EQ(result.size(), 5U);
+    for (int i = 0; i < 5; ++i)
+    {
+        ASSERT_EQ(result[i].copyCount, 0);
+        ASSERT_EQ(result[i].value, i + 1);
+    }
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GET_OUT_OF_RANGE)
+{
+    auto result = Stream(Noisy(1), Noisy(2), Noisy(3), Noisy(4), Noisy(5)) | get(6) | to_vector();
+    ASSERT_EQ(result.size(), 5U);
+    for (int i = 0; i < 5; ++i)
+    {
+        ASSERT_EQ(result[i].copyCount, 0);
+        ASSERT_EQ(result[i].value, i + 1);
+    }
+}
