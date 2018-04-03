@@ -401,3 +401,77 @@ TEST(FILTERS_NOISY_FINITE_STREAM, TO_VECTOR_GENERIC)
         ASSERT_EQ(result[i].value, i + 1);
     }
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<Noisy>() | filter([](auto &&) { return true; }) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_SINGLE_TO_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream(Noisy(45)) | filter([](auto &&) { return false; }) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_SINGLE_TO_SINGLE)
+{
+    auto result = Stream(Noisy(45)) | filter([](auto &&) { return true; }) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].copyCount, 0);
+    ASSERT_EQ(result[0].value, 45);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_GENERIC_TO_EMPTY)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | filter([](auto &&) { return false; }) | to_vector();
+
+    ASSERT_TRUE(result.empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_GENERIC_TO_ITSELF)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | filter([](auto &&) { return true; }) | to_vector();
+
+    ASSERT_EQ(result.size(), 9U);
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(result[i].copyCount, 0);
+        ASSERT_EQ(result[i].value, i + 1);
+    }
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_GENERIC_ONLY_EVEN)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | filter([](auto &&v) { return !(v.value % 2); }) | to_vector();
+
+    ASSERT_EQ(result.size(), 4U);
+    for (int i = 0; i < 4; ++i)
+    {
+        ASSERT_EQ(result[i].copyCount, 0);
+        ASSERT_EQ(result[i].value, 2 + 2 * i);
+    }
+}
