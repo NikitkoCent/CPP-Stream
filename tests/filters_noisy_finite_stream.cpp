@@ -475,3 +475,147 @@ TEST(FILTERS_NOISY_FINITE_STREAM, FILTER_GENERIC_ONLY_EVEN)
         ASSERT_EQ(result[i].value, 2 + 2 * i);
     }
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<Noisy>() | group(1) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_SINGLE_BY_1)
+{
+    auto result = Stream(Noisy(45)) | group(1) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].size(), 1U);
+    ASSERT_EQ(result[0][0].copyCount, 0);
+    ASSERT_EQ(result[0][0].value, 45);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_SINGLE_BY_2)
+{
+    auto result = Stream(Noisy(45)) | group(2) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].size(), 1U);
+    ASSERT_EQ(result[0][0].copyCount, 0);
+    ASSERT_EQ(result[0][0].value, 45);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_GENERIC_BY_1)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | group(1) | to_vector();
+
+    ASSERT_EQ(result.size(), 9U);
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(result[i].size(), 1U);
+        ASSERT_EQ(result[i][0].copyCount, 0);
+        ASSERT_EQ(result[i][0].value, i + 1);
+    }
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_GENERIC_TO_FEW)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | group(4) | to_vector();
+
+    ASSERT_EQ(result.size(), 3U);
+
+    ASSERT_EQ(result[0].size(), 4U);
+    for (int i = 0; i < 4; ++i)
+    {
+        ASSERT_EQ(result[0][i].copyCount, 0);
+        ASSERT_EQ(result[0][i].value, i + 1);
+    }
+
+    ASSERT_EQ(result[1].size(), 4U);
+    for (int i = 0; i < 4; ++i)
+    {
+        ASSERT_EQ(result[1][i].copyCount, 0);
+        ASSERT_EQ(result[1][i].value, i + 5);
+    }
+
+    ASSERT_EQ(result[2].size(), 1U);
+    ASSERT_EQ(result[2][0].copyCount, 0);
+    ASSERT_EQ(result[2][0].value, 9);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_GENERIC_TO_ONE_SAME)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | group(9) | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].size(), 9U);
+
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(result[0][i].copyCount, 0);
+        ASSERT_EQ(result[0][i].value, i + 1);
+    }
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_GENERIC_TO_ONE_MORE1)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | group(10) | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].size(), 9U);
+
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(result[0][i].copyCount, 0);
+        ASSERT_EQ(result[0][i].value, i + 1);
+    }
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, GROUP_GENERIC_TO_ONE_MORE2)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9)) | group(100) | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].size(), 9U);
+
+    for (int i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(result[0][i].copyCount, 0);
+        ASSERT_EQ(result[0][i].value, i + 1);
+    }
+}
