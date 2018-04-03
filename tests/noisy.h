@@ -9,7 +9,7 @@ struct Noisy
     int copyCount = 0;
 
 
-    Noisy(int value) noexcept
+    Noisy(int value = 0) noexcept
         : value(value)
     {}
 

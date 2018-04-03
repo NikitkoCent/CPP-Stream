@@ -179,3 +179,80 @@ TEST(FILTERS_NOISY_FINITE_STREAM, GET_OUT_OF_RANGE)
         ASSERT_EQ(result[i].value, i + 1);
     }
 }
+
+
+auto sumReducer = [](auto &&v1, auto &&v2) { v1.value = v1.value + v2.value; return std::move(v1); };
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_EMPTY)
+{
+    auto result = Stream<Noisy>() | reduce(sumReducer);
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 0);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_SINGLE)
+{
+    auto result = Stream(Noisy(10)) | reduce(sumReducer);
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 10);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_DOUBLE)
+{
+    auto result = Stream(Noisy(45), Noisy(-100)) | reduce(sumReducer);
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, -55);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_GENERIC)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9),
+                         Noisy(10)) | reduce(sumReducer);
+
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 55);
+}
+
+auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(num.value)); };
+auto stringInit = [](auto &&num) { return std::to_string(num.value); };
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_TO_STRING_EMPTY)
+{
+    auto result = Stream<Noisy>() | reduce(stringInit, stringReducer);
+    ASSERT_TRUE(result.empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_TO_STRING_SINGLE)
+{
+    auto result = Stream(Noisy(10)) | reduce(stringInit, stringReducer);
+    ASSERT_EQ(result, "10");
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_TO_STRING_DOUBLE)
+{
+    auto result = Stream(Noisy(45), Noisy(-100)) | reduce(stringInit, stringReducer);
+    ASSERT_EQ(result, "45 -100");
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_TO_STRING_GENERIC)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9),
+                         Noisy(10)) | reduce(stringInit, stringReducer);
+    ASSERT_EQ(result, "1 2 3 4 5 6 7 8 9 10");
+}
