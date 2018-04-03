@@ -371,3 +371,33 @@ TEST(FILTERS_NOISY_FINITE_STREAM, NTH_GENERIC_OUT_OF_RANGE2)
                                 Noisy(6),
                                 Noisy(7)) | nth(100), std::out_of_range);
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, TO_VECTOR_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<Noisy>() | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, TO_VECTOR_SINGLE)
+{
+    auto result = Stream(Noisy(200)) | to_vector();
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].copyCount, 0);
+    ASSERT_EQ(result[0].value, 200);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, TO_VECTOR_GENERIC)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5)) | to_vector();
+
+    ASSERT_EQ(result.size(), 5U);
+    for (int i = 0; i < 5; ++i)
+    {
+        ASSERT_EQ(result[i].copyCount, 0);
+        ASSERT_EQ(result[i].value, i + 1);
+    }
+}
