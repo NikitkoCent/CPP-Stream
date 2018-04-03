@@ -57,5 +57,10 @@ std::ostream& operator<<(std::ostream &stream, const Noisy &noisy)
     return stream << noisy.value;
 }
 
+Noisy operator+(const Noisy &left, const Noisy &right)
+{
+    return {left.value + right.value};
+}
+
 
 #endif //CPP_STREAM_NOISY_H

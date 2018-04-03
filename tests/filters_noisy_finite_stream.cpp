@@ -256,3 +256,41 @@ TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_TO_STRING_GENERIC)
                          Noisy(10)) | reduce(stringInit, stringReducer);
     ASSERT_EQ(result, "1 2 3 4 5 6 7 8 9 10");
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, SUM_EMPTY)
+{
+    auto result = Stream<Noisy>() | sum();
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 0);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, SUM_SINGLE)
+{
+    auto result = Stream(Noisy(10)) | sum();
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 10);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, SUM_DOUBLE)
+{
+    auto result = Stream(Noisy(45), Noisy(-100)) | sum();
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, -55);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, SUM_GENERIC)
+{
+    auto result = Stream(Noisy(1),
+                         Noisy(2),
+                         Noisy(3),
+                         Noisy(4),
+                         Noisy(5),
+                         Noisy(6),
+                         Noisy(7),
+                         Noisy(8),
+                         Noisy(9),
+                         Noisy(10)) | sum();
+    ASSERT_EQ(result.copyCount, 0);
+    ASSERT_EQ(result.value, 55);
+}
