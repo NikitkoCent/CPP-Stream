@@ -9,11 +9,11 @@ struct Noisy
     int copyCount = 0;
 
 
-    Noisy(int value)
+    Noisy(int value) noexcept
         : value(value)
     {}
 
-    Noisy(const Noisy &src)
+    Noisy(const Noisy &src) noexcept
     {
         value = src.value;
         copyCount = src.copyCount + 1;
@@ -21,13 +21,13 @@ struct Noisy
         std::cout << "NOISY COPY CONSTRUCTOR" << std::endl;
     }
 
-    Noisy(Noisy &&src)
+    Noisy(Noisy &&src) noexcept
     {
         value = src.value;
     }
 
 
-    Noisy& operator=(const Noisy &right)
+    Noisy& operator=(const Noisy &right) noexcept
     {
         if (this != &right)
         {
@@ -40,7 +40,7 @@ struct Noisy
         return *this;
     }
 
-    Noisy& operator=(Noisy &&right)
+    Noisy& operator=(Noisy &&right) noexcept
     {
         if (this != &right)
         {
@@ -50,5 +50,12 @@ struct Noisy
         return *this;
     }
 };
+
+
+std::ostream& operator<<(std::ostream &stream, const Noisy &noisy)
+{
+    return stream << noisy.value;
+}
+
 
 #endif //CPP_STREAM_NOISY_H

@@ -73,7 +73,7 @@ add_executable(unittesting include/traits.h
                            tests/filters_move_only_finite_stream.cpp
                            tests/filters_move_only_infinite_stream.cpp
                            tests/filters_generic_move_only_stream.cpp
-                           tests/noisy.h)
+                           tests/noisy.h tests/filters_noisy_finite_stream.cpp)
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)
