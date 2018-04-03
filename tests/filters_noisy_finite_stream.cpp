@@ -85,3 +85,43 @@ TEST(FILTERS_NOISY_FINITE_STREAM, SKIP_DOUBLE)
     ASSERT_EQ(result.size(), 1U);
     ASSERT_EQ(result[0].copyCount, 0U);
 }
+
+
+TEST(FILTERS_NOISY_FINITE_STREAM, MAP_EMPTY)
+{
+    ASSERT_TRUE((stream::Stream<Noisy>() | map([](auto &&v){ return std::move(v); }) | to_vector()).empty());
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, MAP_1)
+{
+    auto result = Stream(Noisy(15))
+                  | map([](auto &&v){ v.value = v.value * v.value; return std::move(v); })
+                  | to_vector();
+
+    ASSERT_EQ(result.size(), 1U);
+    ASSERT_EQ(result[0].copyCount, 0U);
+    ASSERT_EQ(result[0].value, 225);
+}
+
+TEST(FILTERS_NOISY_FINITE_STREAM, MAP_GENERIC)
+{
+    auto result = Stream(Noisy(-1),
+                         Noisy(2),
+                         Noisy(-3),
+                         Noisy(4),
+                         Noisy(-5),
+                         Noisy(6),
+                         Noisy(-7),
+                         Noisy(8),
+                         Noisy(-9))
+                  | map([](auto &&v){ v.value = v.value * v.value; return std::move(v); })
+                  | to_vector();
+
+    ASSERT_EQ(result.size(), 9U);
+
+    for (unsigned i = 0; i < 9; ++i)
+    {
+        ASSERT_EQ(result[i].copyCount, 0U);
+        ASSERT_EQ(result[i].value, (i + 1) * (i + 1));
+    }
+}
