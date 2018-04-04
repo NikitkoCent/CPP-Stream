@@ -15,26 +15,27 @@ struct Noisy
 
     Noisy(const Noisy &src) noexcept
     {
+        std::cout << "NOISY COPY CONSTRUCTOR" << std::endl;
+
         value = src.value;
         copyCount = src.copyCount + 1;
-
-        std::cout << "NOISY COPY CONSTRUCTOR" << std::endl;
     }
 
     Noisy(Noisy &&src) noexcept
     {
         value = src.value;
+        copyCount = src.copyCount;
     }
 
 
     Noisy& operator=(const Noisy &right) noexcept
     {
+        std::cout << "NOISY COPY ASSIGNMENT" << std::endl;
+
         if (this != &right)
         {
             value = right.value;
-            copyCount = right.copyCount;
-
-            std::cout << "NOISY COPY ASSIGNMENT" << std::endl;
+            copyCount = right.copyCount + 1;
         }
 
         return *this;
@@ -45,6 +46,7 @@ struct Noisy
         if (this != &right)
         {
             value = right.value;
+            copyCount = right.copyCount;
         }
 
         return *this;
@@ -52,15 +54,15 @@ struct Noisy
 };
 
 
-std::ostream& operator<<(std::ostream &stream, const Noisy &noisy)
+inline std::ostream& operator<<(std::ostream &stream, const Noisy &noisy)
 {
     return stream << noisy.value;
 }
 
-Noisy operator+(const Noisy &left, const Noisy &right)
+inline Noisy operator+(const Noisy &left, const Noisy &right)
 {
     return {left.value + right.value};
 }
 
 
-#endif //CPP_STREAM_NOISY_H
+#endif //CPP_STREAM_TESTS_NOISY_H
