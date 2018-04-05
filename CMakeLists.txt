@@ -52,21 +52,7 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 # ================================ GOOGLETEST END =======================================
 
-add_executable(unittesting include/traits.h
-                           include/stream.h
-                           include/stream_traits.h
-                           include/filters_lib.h
-                           include/filter.h
-                           include/is_filters_factory_for.h
-                           include/detail/stream_impl.h
-                           include/detail/traits_impl.h
-                           include/detail/stream_base.h
-                           include/detail/utility.h
-                           include/detail/stream_traits_impl.h
-                           include/detail/stream_filter_impl.h
-                           include/detail/filter_impl.h
-                           include/detail/is_filters_factory_for_impl.h
-                           tests/stream_deduction_guides.cpp
+add_executable(unittesting tests/stream_deduction_guides.cpp
                            tests/filters_int_finite_stream.cpp
                            tests/filters_int_infinite_stream.cpp
                            tests/filters_generic_int_stream.cpp
