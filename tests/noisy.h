@@ -6,7 +6,7 @@
 struct Noisy
 {
     int value;
-    int copyCount = 0;
+    static int copyCount;
 
 
     Noisy(int value = 0) noexcept
@@ -17,15 +17,11 @@ struct Noisy
     {
         std::cout << "NOISY COPY CONSTRUCTOR" << std::endl;
 
+        ++copyCount;
         value = src.value;
-        copyCount = src.copyCount + 1;
     }
 
-    Noisy(Noisy &&src) noexcept
-    {
-        value = src.value;
-        copyCount = src.copyCount;
-    }
+    Noisy(Noisy &&src) noexcept = default;
 
 
     Noisy& operator=(const Noisy &right) noexcept
@@ -34,23 +30,14 @@ struct Noisy
 
         if (this != &right)
         {
+            ++copyCount;
             value = right.value;
-            copyCount = right.copyCount + 1;
         }
 
         return *this;
     }
 
-    Noisy& operator=(Noisy &&right) noexcept
-    {
-        if (this != &right)
-        {
-            value = right.value;
-            copyCount = right.copyCount;
-        }
-
-        return *this;
-    }
+    Noisy& operator=(Noisy &&right) noexcept = default;
 };
 
 
