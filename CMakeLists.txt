@@ -52,12 +52,13 @@ if (CMAKE_VERSION VERSION_LESS 2.8.11)
 endif()
 # ================================ GOOGLETEST END =======================================
 
-add_executable(unittesting include/detail/stream_base.h
+add_executable(unittesting include/stream.h
+                           include/traits.h
+                           include/detail/stream_base.h
                            include/detail/traits_impl.h
                            include/detail/stream_impl.h
-                           include/stream.h
                            tests/stream_deduction_guides.cpp
-                           tests/filters_int_finite_stream.cpp
+                           #[[tests/filters_int_finite_stream.cpp
                            tests/filters_int_infinite_stream.cpp
                            tests/filters_generic_int_stream.cpp
                            tests/filters_move_only_finite_stream.cpp
@@ -66,7 +67,7 @@ add_executable(unittesting include/detail/stream_base.h
                            tests/noisy.h
                            tests/noisy.cpp
                            tests/filters_noisy_finite_stream.cpp
-                           tests/filters_generic_noisy_stream.cpp)
+                           tests/filters_generic_noisy_stream.cpp]])
 target_link_libraries(unittesting gtest gmock_main Threads::Threads)
 
 add_test(NAME do_unittests COMMAND unittesting)

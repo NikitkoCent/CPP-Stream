@@ -1,5 +1,4 @@
 #include <stream.h>
-#include <filters_lib.h>
 #include <vector>
 #include <list>
 #include <initializer_list>
@@ -10,7 +9,6 @@
 
 
 using namespace stream;
-using namespace stream::filters;
 
 
 TEST(DEDUCTION_GUIDES_CONTAINER, RREF)

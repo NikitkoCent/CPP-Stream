@@ -26,6 +26,9 @@ namespace stream
 
 
         template<typename T>
+        using RemoveCRefT = ::std::remove_const_t<::std::remove_reference_t<T>>;
+
+        template<typename T>
         using RemoveCVRefT = ::std::remove_cv_t<::std::remove_reference_t<T>>;
 
 
@@ -37,13 +40,15 @@ namespace stream
         };
 
         template<typename C>
-        struct ContainerTraitsImpl<C, VoidT<::std::enable_if_t<::std::is_same<decltype(::std::declval<C>().begin()),
+        struct ContainerTraitsImpl<C, VoidT<typename C::value_type,
+                                            ::std::enable_if_t<::std::is_same<decltype(::std::declval<C>().begin()),
                                                                               decltype(::std::declval<C>().end())>::value>,
                                             ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
                                                                typename ::std::iterator_traits<decltype(::std::declval<C>().begin())>::iterator_category>::value>>
                                   >
         {
             static constexpr bool IsContainer = true;
+            using ValueType = typename C::value_type;
             using Iterator = decltype(::std::declval<C>().begin());
         };
 
@@ -70,7 +75,7 @@ namespace stream
         };
 
         template<typename G>
-        struct GeneratorTraits : GeneratorTraitsImpl<G>
+        struct GeneratorTraits : GeneratorTraitsImpl<::std::remove_reference_t<G>>
         {};
 
         template<typename G>
@@ -90,10 +95,11 @@ namespace stream
                               >
         {
             static constexpr bool IsRange = true;
+            using ValueType = typename ::std::iterator_traits<It>::value_type;
         };
 
         template<typename It>
-        struct RangeTraits : RangeTraitsImpl<It>
+        struct RangeTraits : RangeTraitsImpl<::std::remove_reference_t<It>>
         {};
 
         template<typename It>
