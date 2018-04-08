@@ -3,7 +3,7 @@
 
 #include "stream_base.h"    // StreamBase
 #include "traits_impl.h"    // VoidT, ContainerTraits, IsContainerV, IsGeneratorV, IsRangeV
-#include <type_traits>      // ::std::remove_reference_t, ::std::enable_if_t, ::std::is_lvalue_reference, ::std::decay_t
+#include <type_traits>      // ::std::remove_reference_t, ::std::enable_if_t, ::std::is_reference, ::std::decay_t
 #include <utility>          // ::std::move, ::std::forward
 #include <initializer_list> // ::std::initializer_list
 #include <functional>       // ::std::reference_wrapper
@@ -26,27 +26,48 @@ namespace stream
                         > : public StreamBase<T, true, Derived>
         {
         public:
-            using RealType = typename StreamBase<T, true, Derived>::RealType;
+            using RealType = stream::ValueHolder<typename ContainerTraits<Container>::ReferenceType>;
 
 
-            StreamImpl() = default;
+            StreamImpl()
+                : it(container.begin())
+            {}
 
             StreamImpl(Container &&container)
-                : container(::std::move(container))
+                : container(::std::move(container)), it(container.begin())
             {}
 
             StreamImpl(::std::initializer_list<T> initList)
-                : container(initList)
+                : container(initList), it(container.begin())
             {}
 
             template<typename Arg1, typename... Args>
             StreamImpl(Arg1 &&arg1, Args&&... args)
             {
                 initialize(::std::forward<Arg1>(arg1), ::std::forward<Args>(args)...);
+                it = container.begin();
+            }
+
+
+            ::std::optional<RealType> getNext()
+            {
+                if (isEndImpl())
+                {
+                    return ::std::nullopt;
+                }
+
+                return *it++;
+            }
+
+        protected:
+            bool isEndImpl() const
+            {
+                return (it == container.end());
             }
 
         private:
             Container container;
+            typename ContainerTraits<Container>::Iterator it;
 
 
             template<typename Arg1>
@@ -70,18 +91,46 @@ namespace stream
                          ContainerRef,
                          Derived,
                          VoidT<::std::enable_if_t<IsContainerV<ContainerRef>>,
-                               ::std::enable_if_t<::std::is_lvalue_reference<ContainerRef>::value>>
+                               ::std::enable_if_t<::std::is_reference<ContainerRef>::value>>
                         > : public StreamBase<T, true, Derived>
         {
         public:
-            using RealType = typename StreamBase<T, true, Derived>::RealType;
+            static_assert(!::std::is_rvalue_reference<ContainerRef>::value, "RValue references isn't allowed");
+
+            using RealType = stream::ValueHolder<typename ContainerTraits<ContainerRef>::ReferenceType>;
+
 
             StreamImpl(ContainerRef containerRef)
                 : containerRef(containerRef)
             {}
 
+
+            ::std::optional<RealType> getNext()
+            {
+                if (isEndImpl())
+                {
+                    return ::std::nullopt;
+                }
+
+                return *it++;
+            }
+
+        protected:
+            bool isEndImpl() const
+            {
+                if (!iteratorInitialized)
+                {
+                    iteratorInitialized = true;
+                    it = containerRef.get().begin();
+                }
+
+                return (it == containerRef.get().end());
+            }
+
         private:
             ::std::reference_wrapper<::std::remove_reference_t<ContainerRef>> containerRef;
+            mutable typename ContainerTraits<ContainerRef>::Iterator it;
+            mutable bool iteratorInitialized = false;
         };
 
 
@@ -94,9 +143,6 @@ namespace stream
                         > : public StreamBase<T, false, Derived>
         {
         public:
-            using RealType = typename StreamBase<T, false, Derived>::RealType;
-
-
             template<typename Callable>
             StreamImpl(Callable &&callable)
                 : generator(::std::forward<Callable>(callable))
@@ -116,9 +162,6 @@ namespace stream
                         > : public StreamBase<T, true, Derived>
         {
         public:
-            using RealType = typename StreamBase<T, true, Derived>::RealType;
-
-
             template<typename B, typename E>
             StreamImpl(B &&rangeBegin, E &&rangeEnd)
                 : rangeBegin(::std::forward<B>(rangeBegin)), rangeEnd(::std::forward<E>(rangeEnd))

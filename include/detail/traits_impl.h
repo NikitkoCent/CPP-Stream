@@ -50,6 +50,7 @@ namespace stream
             static constexpr bool IsContainer = true;
             using ValueType = typename C::value_type;
             using Iterator = decltype(::std::declval<C>().begin());
+            using ReferenceType = decltype(*(::std::declval<Iterator>()));
         };
 
         template<typename C>
@@ -105,6 +106,47 @@ namespace stream
         template<typename It>
         static constexpr bool IsRangeV = RangeTraits<It>::IsRange;
         // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename From, typename To>
+        struct CopyCVImpl
+        {
+            using Type = To;
+        };
+
+        template<typename From, typename To>
+        struct CopyCVImpl<const From, To> : CopyCVImpl<From, const To>
+        {};
+
+        template<typename From, typename To>
+        struct CopyCVImpl<volatile From, To> : CopyCVImpl<From, volatile To>
+        {};
+
+        template<typename From, typename To>
+        struct CopyCVImpl<const volatile From, To> : CopyCVImpl<From, const volatile To>
+        {};
+
+
+        template<typename From, typename To>
+        struct CopyCV : CopyCVImpl<::std::remove_reference_t<From>, To>
+        {};
+
+        template<typename From, typename To>
+        struct CopyCV<From, To&>
+        {
+            using Type = typename CopyCV<From, To>::Type&;
+        };
+
+        template<typename From, typename To>
+        struct CopyCV<From, To&&>
+        {
+            using Type = typename CopyCV<From, To>::Type&&;
+        };
+
+
+        template<typename From, typename To>
+        using CopyCVT = typename CopyCV<From, To>::Type;
+        //=============================================================================================================
     };
 }
 
