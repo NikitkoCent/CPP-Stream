@@ -180,6 +180,11 @@ namespace stream
 
             ::std::optional<RealType> getNext()
             {
+                if (isEndImpl())
+                {
+                    return ::std::nullopt;
+                }
+
                 return ::std::move(*rangeBegin++);
             }
 
