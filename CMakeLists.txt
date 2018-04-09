@@ -55,9 +55,11 @@ endif()
 add_executable(unittesting include/stream.h
                            include/traits.h
                            include/value_holder.h
+                           include/continuation.h
                            include/detail/stream_base.h
                            include/detail/traits_impl.h
                            include/detail/stream_impl.h
+                           include/detail/continuation_impl.h
                            tests/stream_deduction_guides.cpp
                            #[[tests/filters_int_finite_stream.cpp
                            tests/filters_int_infinite_stream.cpp

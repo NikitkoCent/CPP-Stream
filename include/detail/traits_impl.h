@@ -213,7 +213,7 @@ namespace stream
             static constexpr bool IsContinuation = true;
             using ValueType = InvokeResultT<Continuation<C, false>,
                                             decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
-                                            const S&>
+                                            const S&>;
         };
 
         template<typename C, typename S>
