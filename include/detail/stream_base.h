@@ -1,7 +1,8 @@
 #ifndef CPP_STREAM_DETAIL_STREAM_BASE_H
 #define CPP_STREAM_DETAIL_STREAM_BASE_H
 
-#include <type_traits>  // ::std::is_reference, ::std::remove_reference, ::std::conditional_t, ::std::remove_const_t
+#include "traits_impl.h"
+#include <type_traits>  // ::std::enable_if_t
 #include <optional>     // ::std::optional
 #include "../value_holder.h"
 
@@ -12,7 +13,7 @@ namespace stream
         template<typename T, bool Finiteness, typename Derived>
         struct StreamBase
         {
-            using ValueType = ::std::decay_t<T>;
+            using ValueType = RemoveCVRefT<T>;
             static constexpr bool IsFinite = Finiteness;
 
 
