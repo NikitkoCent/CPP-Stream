@@ -26,8 +26,8 @@ namespace stream
                         > : public StreamBase<T, true, Derived>
         {
         public:
-            using RealType = stream::ValueHolder<typename ContainerTraits<Container>::ReferenceType>;
-
+            using RealType = stream::ValueHolder<CopyCVT<typename ContainerTraits<Container>::ReferenceType,
+                                                         typename StreamBase<T, true, Derived>::ValueType&>>;
 
             StreamImpl()
                 : it(container.begin())
@@ -97,7 +97,8 @@ namespace stream
         public:
             static_assert(!::std::is_rvalue_reference<ContainerRef>::value, "RValue references isn't allowed");
 
-            using RealType = stream::ValueHolder<typename ContainerTraits<ContainerRef>::ReferenceType>;
+            using RealType = stream::ValueHolder<CopyCVT<typename ContainerTraits<ContainerRef>::ReferenceType,
+                                                         typename StreamBase<T, true, Derived>::ValueType&>>;
 
 
             StreamImpl(ContainerRef containerRef)
@@ -150,6 +151,7 @@ namespace stream
             StreamImpl(Callable &&callable)
                 : generator(::std::forward<Callable>(callable))
             {}
+
 
             ::std::optional<RealType> getNext()
             {
