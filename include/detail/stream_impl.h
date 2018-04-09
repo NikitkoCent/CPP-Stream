@@ -143,10 +143,18 @@ namespace stream
                         > : public StreamBase<T, false, Derived>
         {
         public:
+            using RealType = ValueHolder<typename GeneratorTraits<Generator>::ValueType>;
+
+
             template<typename Callable>
             StreamImpl(Callable &&callable)
                 : generator(::std::forward<Callable>(callable))
             {}
+
+            ::std::optional<RealType> getNext()
+            {
+                return generator();
+            }
 
         private:
             ::std::decay_t<Generator> generator;
@@ -162,10 +170,24 @@ namespace stream
                         > : public StreamBase<T, true, Derived>
         {
         public:
+            using RealType = ValueHolder<typename RangeTraits<Iterator>::ValueType>;
+
+
             template<typename B, typename E>
             StreamImpl(B &&rangeBegin, E &&rangeEnd)
                 : rangeBegin(::std::forward<B>(rangeBegin)), rangeEnd(::std::forward<E>(rangeEnd))
             {}
+
+            ::std::optional<RealType> getNext()
+            {
+                return ::std::move(*rangeBegin++);
+            }
+
+        protected:
+            bool isEndImpl() const
+            {
+                return (rangeBegin == rangeEnd);
+            }
 
         private:
             Iterator rangeBegin;
