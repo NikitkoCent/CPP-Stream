@@ -7,6 +7,13 @@
 
 namespace stream
 {
+    template<typename T, typename Source>
+    struct Stream;
+
+    template<typename T, bool Fin>
+    class Continuation;
+
+
     namespace detail
     {
         // =================================== CWG #1558 issue workaround =============================================
@@ -146,7 +153,91 @@ namespace stream
 
         template<typename From, typename To>
         using CopyCVT = typename CopyCV<From, To>::Type;
-        //=============================================================================================================
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename S>
+        struct StreamTraitsImpl
+        {
+            static constexpr bool IsStream = false;
+        };
+
+        template<typename T, typename Source>
+        struct StreamTraitsImpl<stream::Stream<T, Source>>
+        {
+            static constexpr bool IsStream = true;
+            using ValueType = typename stream::Stream<T, Source>::ValueType;
+            using RealType = typename stream::Stream<T, Source>::RealType;
+        };
+
+        template<typename S>
+        struct StreamTraits : StreamTraitsImpl<RemoveCVRefT<S>>
+        {};
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename C, typename S, typename = void>
+        struct ConsumerForTraitsImpl
+        {
+            static constexpr bool IsConsumer = false;
+        };
+
+        template<typename C, typename S>
+        struct ConsumerForTraitsImpl<C, S, VoidT<InvokeResultT<::std::decay_t<C>, S&&>>>
+        {
+            static constexpr bool IsConsumer = true;
+            using ValueType = InvokeResultT<::std::decay_t<C>, S&&>;
+        };
+
+        template<typename C, typename S>
+        struct ConsumerForTraits : ConsumerForTraitsImpl<C, ::std::remove_reference_t<S>>
+        {};
+
+        template<typename C, typename S>
+        static constexpr bool IsConsumerFor = ConsumerForTraits<C, S>::IsConsumer;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename C, typename S, typename = void>
+        struct ContinuationForTraitsImpl
+        {
+            static constexpr bool IsContinuation = false;
+        };
+
+        template<typename C, typename S>
+        struct ContinuationForTraitsImpl<Continuation<C, false>, S,
+                                         VoidT<InvokeResultT<Continuation<C, false>,
+                                                             decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
+                                                             const S&>>>
+        {
+            static constexpr bool IsContinuation = true;
+            using ValueType = InvokeResultT<Continuation<C, false>,
+                                            decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
+                                            const S&>
+        };
+
+        template<typename C, typename S>
+        struct ContinuationForTraitsImpl<Continuation<C, true>, S,
+                                         VoidT<InvokeResultT<Continuation<C, true>,
+                                                             decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
+                                                             const S&,
+                                                             bool&>>>
+        {
+            static constexpr bool IsContinuation = true;
+            using ValueType = InvokeResultT<Continuation<C, true>,
+                                            decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
+                                            const S&,
+                                            bool&>;
+        };
+
+        template<typename C, typename Stream>
+        struct ContinuationForTraits : ContinuationForTraitsImpl<::std::remove_reference_t<C>,
+                                                                 ::std::remove_reference_t<Stream>>
+        {};
+
+        template<typename C, typename Stream>
+        static constexpr bool IsContinuationFor = ContinuationForTraits<C, Stream>::IsContinuation;
+        // ============================================================================================================
     };
 }
 
