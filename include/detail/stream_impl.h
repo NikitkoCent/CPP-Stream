@@ -204,14 +204,18 @@ namespace stream
 
 
         // Combined
+        template<typename OldStream, typename Contin>
+        struct CombinedStreamTag;
+
         template<typename OldStream, typename F, bool ManagesFiniteness>
-        struct CombinedStreamTag {};
+        struct CombinedStreamTag<OldStream, Continuation<F, ManagesFiniteness>>
+        {};
 
         #define CS_PARENT StreamBase<T, StreamTraits<OldStream>::IsFinite | ManagesFiniteness, Derived>
 
         template<typename T, typename F, bool ManagesFiniteness, typename Derived, typename OldStream>
         class StreamImpl<T,
-                         CombinedStreamTag<OldStream, F, ManagesFiniteness>,
+                         CombinedStreamTag<OldStream, Continuation<F, ManagesFiniteness>>,
                          Derived,
                          void
                         > : public CS_PARENT

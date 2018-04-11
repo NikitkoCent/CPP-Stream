@@ -5,13 +5,11 @@
 
 namespace stream
 {
-    using detail::Continuation;
-
     template<bool MakesFinite, typename F>
-    Continuation<F, MakesFinite> makeContinuation(F &&f)
+    detail::Continuation<F, MakesFinite> makeContinuation(F &&f)
     {
         return {::std::forward<F>(f)};
-    };
+    }
 }
 
 #endif //CPP_STREAM_CONTINUATION_H

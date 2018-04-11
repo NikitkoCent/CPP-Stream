@@ -56,6 +56,7 @@ add_executable(unittesting include/stream.h
                            include/traits.h
                            include/value_holder.h
                            include/continuation.h
+                           include/operations.h
                            include/detail/stream_base.h
                            include/detail/traits_impl.h
                            include/detail/stream_impl.h

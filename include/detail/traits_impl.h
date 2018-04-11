@@ -244,6 +244,26 @@ namespace stream
         // ============================================================================================================
 
         // ============================================================================================================
+        template<typename Factory, typename Stream, typename = void>
+        struct ContinuationsFactoryForTraits
+        {
+            static constexpr bool IsFactory = false;
+        };
+
+        template<typename Factory, typename Stream>
+        struct ContinuationsFactoryForTraits<Factory,
+                                             Stream,
+                                             VoidT<::std::enable_if_t<IsContinuationForV<decltype(::std::declval<Factory>().template createContinuation<Stream>()), Stream>>>
+                                            >
+        {
+            static constexpr bool IsFactory = true;
+        };
+
+        template<typename Factory, typename Stream>
+        static constexpr bool IsContinuationsFactoryForV = ContinuationsFactoryForTraits<Factory, Stream>::IsFactory;
+        // ============================================================================================================
+
+        // ============================================================================================================
         template<typename T>
         struct UnwrapValueHolder
         {
@@ -253,6 +273,9 @@ namespace stream
         template<typename T>
         struct UnwrapValueHolder<ValueHolder<T>> : UnwrapValueHolder<T>
         {};
+
+        template<typename T>
+        using UnwrapValueHolderT = typename UnwrapValueHolder<T>::Type;
         // ============================================================================================================
     };
 }
