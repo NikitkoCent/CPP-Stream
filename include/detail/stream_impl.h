@@ -207,12 +207,14 @@ namespace stream
         template<typename OldStream, typename F, bool ManagesFiniteness>
         struct CombinedStreamTag {};
 
+        #define CS_PARENT StreamBase<T, StreamTraits<OldStream>::IsFinite | ManagesFiniteness, Derived>
+
         template<typename T, typename F, bool ManagesFiniteness, typename Derived, typename OldStream>
         class StreamImpl<T,
                          CombinedStreamTag<OldStream, F, ManagesFiniteness>,
                          Derived,
                          void
-                        > : public StreamBase<T, StreamTraits<OldStream>::IsFinite | ManagesFiniteness, Derived>
+                        > : public CS_PARENT
         {
         public:
             using RealType = ValueHolder<T>;
@@ -225,7 +227,7 @@ namespace stream
 
             ::std::optional<RealType> getNext()
             {
-                if constexpr (IsFinite)
+                if constexpr (CS_PARENT::IsFinite)
                 {
                     if (isEndImpl())
                     {
@@ -250,7 +252,7 @@ namespace stream
             }
 
         protected:
-            template<bool Fin = IsFinite>
+            template<bool Fin = CS_PARENT::IsFinite>
             ::std::enable_if_t<Fin, bool> isEndImpl() const
             {
                 if constexpr (ManagesFiniteness)
@@ -273,6 +275,8 @@ namespace stream
             Continuation<F, ManagesFiniteness> continuation;
             bool end = false;
         };
+
+        #undef CS_PARENT
     };
 }
 
