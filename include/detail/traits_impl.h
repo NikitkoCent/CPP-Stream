@@ -13,6 +13,9 @@ namespace stream
     template<typename T, bool Fin>
     class Continuation;
 
+    template<typename T>
+    class ValueHolder;
+
 
     namespace detail
     {
@@ -168,6 +171,7 @@ namespace stream
             static constexpr bool IsStream = true;
             using ValueType = typename stream::Stream<T, Source>::ValueType;
             using RealType = typename stream::Stream<T, Source>::RealType;
+            static constexpr bool IsFinite = stream::Stream<T, Source>::IsFinite;
         };
 
         template<typename S>
@@ -194,7 +198,7 @@ namespace stream
         {};
 
         template<typename C, typename S>
-        static constexpr bool IsConsumerFor = ConsumerForTraits<C, S>::IsConsumer;
+        static constexpr bool IsConsumerForV = ConsumerForTraits<C, S>::IsConsumer;
         // ============================================================================================================
 
         // ============================================================================================================
@@ -236,7 +240,19 @@ namespace stream
         {};
 
         template<typename C, typename Stream>
-        static constexpr bool IsContinuationFor = ContinuationForTraits<C, Stream>::IsContinuation;
+        static constexpr bool IsContinuationForV = ContinuationForTraits<C, Stream>::IsContinuation;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename T>
+        struct UnwrapValueHolder
+        {
+            using Type = T;
+        };
+
+        template<typename T>
+        struct UnwrapValueHolder<ValueHolder<T>> : UnwrapValueHolder<T>
+        {};
         // ============================================================================================================
     };
 }

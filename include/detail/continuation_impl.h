@@ -8,7 +8,7 @@ namespace stream
 {
     namespace detail
     {
-        template<typename C, bool MakesFinite>
+        template<typename C, bool ManagesFiniteness>
         class Continuation
         {
         public:
@@ -17,10 +17,16 @@ namespace stream
                 : continuation(::std::forward<F>(continuation))
             {}
 
-            template<typename Args>
-            decltype(auto) operator()(Args&&... args)
+            template<typename V, typename S, typename ::std::enable_if_t<ManagesFiniteness>* = nullptr>
+            decltype(auto) operator()(V &&value, const S& stream, bool &end)
             {
-                return continuation(::std::forward<Args>(args)...);
+                return continuation(::std::forward<V>(value), stream, end);
+            }
+
+            template<typename V, typename S, typename ::std::enable_if_t<!ManagesFiniteness>* = nullptr>
+            decltype(auto) operator()(V &&value, const S& stream)
+            {
+                return continuation(::std::forward<V>(value), stream);
             }
 
         private:

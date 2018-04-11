@@ -1,12 +1,13 @@
 #ifndef CPP_STREAM_DETAIL_STREAM_IMPL_H
 #define CPP_STREAM_DETAIL_STREAM_IMPL_H
 
-#include "stream_base.h"    // StreamBase
-#include "traits_impl.h"    // VoidT, ContainerTraits, IsContainerV, IsGeneratorV, IsRangeV
-#include <type_traits>      // ::std::remove_reference_t, ::std::enable_if_t, ::std::is_reference, ::std::decay_t
-#include <utility>          // ::std::move, ::std::forward
-#include <initializer_list> // ::std::initializer_list
-#include <functional>       // ::std::reference_wrapper
+#include "stream_base.h"        // StreamBase
+#include "continuation_impl.h"  // Continuation
+#include "traits_impl.h"        // VoidT, ContainerTraits, IsContainerV, IsGeneratorV, IsRangeV
+#include <type_traits>          // ::std::remove_reference_t, ::std::enable_if_t, ::std::is_reference, ::std::decay_t
+#include <utility>              // ::std::move, ::std::forward
+#include <initializer_list>     // ::std::initializer_list
+#include <functional>           // ::std::reference_wrapper
 
 namespace stream
 {
@@ -200,7 +201,79 @@ namespace stream
             Iterator rangeBegin;
             Iterator rangeEnd;
         };
-    }
+
+
+        // Combined
+        template<typename OldStream, typename F, bool ManagesFiniteness>
+        struct CombinedStreamTag {};
+
+        template<typename T, typename F, bool ManagesFiniteness, typename Derived, typename OldStream>
+        class StreamImpl<T,
+                         CombinedStreamTag<OldStream, F, ManagesFiniteness>,
+                         Derived,
+                         void
+                        > : public StreamBase<T, StreamTraits<OldStream>::IsFinite | ManagesFiniteness, Derived>
+        {
+        public:
+            using RealType = ValueHolder<T>;
+
+
+            StreamImpl(OldStream &&oldStream, Continuation<F, ManagesFiniteness> &&continuation)
+                : oldStream(::std::move(oldStream)), continuation(::std::move(continuation))
+            {}
+
+
+            ::std::optional<RealType> getNext()
+            {
+                if constexpr (IsFinite)
+                {
+                    if (isEndImpl())
+                    {
+                        return ::std::nullopt;
+                    }
+                }
+
+                auto oldNext = oldStream.getNext();
+                if (!oldNext)
+                {
+                    return ::std::nullopt;
+                }
+
+                if constexpr (ManagesFiniteness)
+                {
+                    return continuation(::std::move(oldNext).get(), static_cast<const OldStream &>(oldStream), end);
+                }
+                else
+                {
+                    return continuation(::std::move(oldNext).get(), static_cast<const OldStream &>(oldStream));
+                }
+            }
+
+        protected:
+            template<bool Fin = IsFinite>
+            ::std::enable_if_t<Fin, bool> isEndImpl() const
+            {
+                if constexpr (ManagesFiniteness)
+                {
+                    if constexpr (StreamTraits<OldStream>::IsFinite)
+                    {
+                        return end | oldStream.isEnd();
+                    }
+
+                    return end;
+                }
+                else
+                {
+                    return oldStream.isEnd();
+                }
+            }
+
+        private:
+            OldStream oldStream;
+            Continuation<F, ManagesFiniteness> continuation;
+            bool end = false;
+        };
+    };
 }
 
 #endif //CPP_STREAM_DETAIL_STREAM_IMPL_H
