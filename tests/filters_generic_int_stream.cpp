@@ -1,16 +1,17 @@
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <list>
 #include <vector>
 #include <string>
 #include <numeric>
 #include <functional>
+#include <iostream>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 
 using stream::Stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_GENERIC_INT_STREAM, REF_CONTAINER)

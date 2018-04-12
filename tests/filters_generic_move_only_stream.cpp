@@ -1,5 +1,5 @@
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <list>
 #include <vector>
 #include <string>
@@ -11,7 +11,7 @@
 
 
 using stream::Stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_GENERIC_MOVE_ONLY_STREAM, CONTAINER)

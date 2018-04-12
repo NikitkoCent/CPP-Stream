@@ -1,5 +1,5 @@
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <vector>
 #include <sstream>
 #include <type_traits>
@@ -8,7 +8,7 @@
 
 
 using namespace stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_INT_FINITE_STREAM, PRINT_TO_RETURNVALUE)
@@ -52,6 +52,7 @@ TEST(FILTERS_INT_FINITE_STREAM, PRINT_TO_GENERIC)
 }
 
 
+
 TEST(FILTERS_INT_FINITE_STREAM, SKIP_0)
 {
     ASSERT_THAT((stream::Stream{1, 2, 3} | skip(0) | to_vector()), testing::ElementsAre(1, 2, 3));
@@ -86,6 +87,7 @@ TEST(FILTERS_INT_FINITE_STREAM, MAP_EMPTY)
     ASSERT_TRUE((stream::Stream<int>() | map([](auto &&v){ return std::move(v); }) | to_vector()).empty());
 }
 
+
 TEST(FILTERS_INT_FINITE_STREAM, MAP_1)
 {
     ASSERT_THAT((stream::Stream(15) | map([](auto &&v){ return v * v; }) | to_vector()), testing::ElementsAre(225));
@@ -96,6 +98,7 @@ TEST(FILTERS_INT_FINITE_STREAM, MAP_GENERIC)
     ASSERT_THAT((stream::Stream(-1, 2, -3, 4, -5, 6, -7, 8, -9) | map([](auto &&v){ return v * v ;}) | to_vector()),
                 testing::ElementsAre(1, 4, 9, 16, 25, 36, 49, 64, 81));
 }
+
 
 
 TEST(FILTERS_INT_FINITE_STREAM, GET_0_EMPTY)

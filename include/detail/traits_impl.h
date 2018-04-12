@@ -1,32 +1,37 @@
 #ifndef CPP_STREAM_DETAIL_TRAITS_IMPL_H
 #define CPP_STREAM_DETAIL_TRAITS_IMPL_H
 
-#include "utility.h"    // VoidT
-#include <type_traits>  // ::std::result_of_t, ::std::invoke_result_t, ::std::enable_if_t, ::std::true_type, ::std::false_type
+#include "continuation_impl.h"
+#include <type_traits>  // ::std::invoke_result_t, ::std::decay_t, ::std::enable_if_t, ::std::is_same, ::std::is_base_of
+#include <iterator>     // ::std::iterator_traits, ::std::forward_iterator_tag, ::std::input_iterator_tag
 #include <utility>      // ::std::declval
-#include <iterator>     // ::std::forward_iterator_tag, ::std::iterator_traits
+#include <optional>     // ::std::optional
 
 namespace stream
 {
+    template<typename T, typename Source>
+    struct Stream;
+
+    template<typename T>
+    class ValueHolder;
+
+
     namespace detail
     {
-        #ifdef __cpp_lib_is_invocable
+        // =================================== CWG #1558 issue workaround =============================================
+        template<typename...>
+        struct MakeVoid
+        {
+            using Type = void;
+        };
+
+        template<typename... Ts>
+        using VoidT = typename MakeVoid<Ts...>::Type;
+        // ============================================================================================================
+
+
         template<typename Callable, typename... Args>
         using InvokeResultT = ::std::invoke_result_t<Callable, Args...>;
-        //#elif defined(__cpp_lib_result_of_sfinae)
-        #else
-        template<typename Callable, typename... Args>
-        using InvokeResultT = ::std::result_of_t<Callable&&(Args&&...)>;
-        #endif
-
-
-        template<typename F, typename = void, typename... Args>
-        struct IsInvokable : ::std::false_type
-        {};
-
-        template<typename F, typename... Args>
-        struct IsInvokable<F, VoidT<InvokeResultT<F, Args...>>, Args...> : ::std::true_type
-        {};
 
 
         template<typename T>
@@ -36,6 +41,7 @@ namespace stream
         using RemoveCVRefT = ::std::remove_cv_t<::std::remove_reference_t<T>>;
 
 
+        // ============================================================================================================
         template<typename C, typename = void>
         struct ContainerTraitsImpl
         {
@@ -43,24 +49,248 @@ namespace stream
         };
 
         template<typename C>
-        struct ContainerTraitsImpl<C, VoidT<decltype(::std::declval<C>().begin()),
-                                            decltype(::std::declval<C>().end()),
+        struct ContainerTraitsImpl<C, VoidT<typename C::value_type,
+                                            ::std::enable_if_t<::std::is_same<decltype(::std::declval<C>().begin()),
+                                                                              decltype(::std::declval<C>().end())>::value>,
                                             ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
-                                                                                 typename ::std::iterator_traits<typename C::iterator>::iterator_category>::value>,
-                                            ::std::enable_if_t<::std::is_base_of<::std::forward_iterator_tag,
-                                                                                 typename ::std::iterator_traits<typename C::const_iterator>::iterator_category>::value>>
+                                                               typename ::std::iterator_traits<decltype(::std::declval<C>().begin())>::iterator_category>::value>>
                                   >
         {
             static constexpr bool IsContainer = true;
-            using Iterator = typename C::iterator;
-            using ConstIterator = typename C::const_iterator;
             using ValueType = typename C::value_type;
+            using Iterator = decltype(::std::declval<C>().begin());
+            using ReferenceType = decltype(*(::std::declval<Iterator>()));
         };
 
         template<typename C>
-        struct ContainerTraits : ContainerTraitsImpl<RemoveCVRefT<C>>
+        struct ContainerTraits : ContainerTraitsImpl<::std::remove_reference_t<C>>
         {};
-    }
+
+        template<typename C>
+        static constexpr bool IsContainerV = ContainerTraits<C>::IsContainer;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename G, typename = void>
+        struct GeneratorTraitsImpl
+        {
+            static constexpr bool IsGenerator = false;
+        };
+
+        template<typename G>
+        struct GeneratorTraitsImpl<G, VoidT<InvokeResultT<::std::decay_t<G>>>>
+        {
+            static constexpr bool IsGenerator = true;
+            using ValueType = InvokeResultT<::std::decay_t<G>>;
+        };
+
+        template<typename G>
+        struct GeneratorTraits : GeneratorTraitsImpl<::std::remove_reference_t<G>>
+        {};
+
+        template<typename G>
+        static constexpr bool IsGeneratorV = GeneratorTraits<G>::IsGenerator;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename It, typename = void>
+        struct RangeTraitsImpl
+        {
+            static constexpr bool IsRange = false;
+        };
+
+        template<typename It>
+        struct RangeTraitsImpl<It, VoidT<::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
+                                                                              typename ::std::iterator_traits<It>::iterator_category>::value>>
+                              >
+        {
+            static constexpr bool IsRange = true;
+            using ValueType = typename ::std::iterator_traits<It>::value_type;
+        };
+
+        template<typename It>
+        struct RangeTraits : RangeTraitsImpl<::std::remove_reference_t<It>>
+        {};
+
+        template<typename It>
+        static constexpr bool IsRangeV = RangeTraits<It>::IsRange;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename From, typename To>
+        struct CopyCVImpl
+        {
+            using Type = To;
+        };
+
+        template<typename From, typename To>
+        struct CopyCVImpl<const From, To> : CopyCVImpl<From, const To>
+        {};
+
+        template<typename From, typename To>
+        struct CopyCVImpl<volatile From, To> : CopyCVImpl<From, volatile To>
+        {};
+
+        template<typename From, typename To>
+        struct CopyCVImpl<const volatile From, To> : CopyCVImpl<From, const volatile To>
+        {};
+
+
+        template<typename From, typename To>
+        struct CopyCV : CopyCVImpl<::std::remove_reference_t<From>, To>
+        {};
+
+        template<typename From, typename To>
+        struct CopyCV<From, To&>
+        {
+            using Type = typename CopyCV<From, To>::Type&;
+        };
+
+        template<typename From, typename To>
+        struct CopyCV<From, To&&>
+        {
+            using Type = typename CopyCV<From, To>::Type&&;
+        };
+
+
+        template<typename From, typename To>
+        using CopyCVT = typename CopyCV<From, To>::Type;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename S>
+        struct StreamTraitsImpl
+        {
+            static constexpr bool IsStream = false;
+        };
+
+        template<typename T, typename Source>
+        struct StreamTraitsImpl<stream::Stream<T, Source>>
+        {
+            static constexpr bool IsStream = true;
+            using ValueType = typename stream::Stream<T, Source>::ValueType;
+            using RealType = typename stream::Stream<T, Source>::RealType;
+            static constexpr bool IsFinite = stream::Stream<T, Source>::IsFinite;
+        };
+
+        template<typename S>
+        struct StreamTraits : StreamTraitsImpl<RemoveCVRefT<S>>
+        {};
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename C, typename S, typename = void>
+        struct ConsumerForTraitsImpl
+        {
+            static constexpr bool IsConsumer = false;
+        };
+
+        template<typename C, typename S>
+        struct ConsumerForTraitsImpl<C, S, VoidT<InvokeResultT<::std::decay_t<C>, S&&>>>
+        {
+            static constexpr bool IsConsumer = true;
+            using ValueType = InvokeResultT<::std::decay_t<C>, S&&>;
+        };
+
+        template<typename C, typename S>
+        struct ConsumerForTraits : ConsumerForTraitsImpl<C, ::std::remove_reference_t<S>>
+        {};
+
+        template<typename C, typename S>
+        static constexpr bool IsConsumerForV = ConsumerForTraits<C, S>::IsConsumer;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename T>
+        struct IsOptional : ::std::false_type
+        {};
+
+        template<typename... Args>
+        struct IsOptional<::std::optional<Args...>> : ::std::true_type
+        {};
+
+        template<typename T>
+        static constexpr bool IsOptionalV = IsOptional<T>::value;
+
+
+        template<typename C, typename S, typename = void>
+        struct ContinuationForTraitsImpl
+        {
+            static constexpr bool IsContinuation = false;
+        };
+
+        template<typename C, typename S>
+        struct ContinuationForTraitsImpl<Continuation<C, false>, S,
+                                         VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, false>,
+                                                                                            typename StreamTraits<S>::RealType&&,
+                                                                                            const S&>>>>
+                                        >
+        {
+            static constexpr bool IsContinuation = true;
+            using ValueType = typename InvokeResultT<Continuation<C, false>,
+                                                     typename StreamTraits<S>::RealType&&,
+                                                     const S&>::value_type;
+        };
+
+        template<typename C, typename S>
+        struct ContinuationForTraitsImpl<Continuation<C, true>, S,
+                                         VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, true>,
+                                                                                            typename StreamTraits<S>::RealType&&,
+                                                                                            const S&,
+                                                                                            bool&>>>>
+                                        >
+        {
+            static constexpr bool IsContinuation = true;
+            using ValueType = typename InvokeResultT<Continuation<C, true>,
+                                                     typename StreamTraits<S>::RealType&&,
+                                                     const S&,
+                                                     bool&>::value_type;
+        };
+
+        template<typename C, typename Stream>
+        struct ContinuationForTraits : ContinuationForTraitsImpl<::std::remove_reference_t<C>,
+                                                                 ::std::remove_reference_t<Stream>>
+        {};
+
+        template<typename C, typename Stream>
+        static constexpr bool IsContinuationForV = ContinuationForTraits<C, Stream>::IsContinuation;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename Factory, typename Stream, typename = void>
+        struct ContinuationsFactoryForTraits
+        {
+            static constexpr bool IsFactory = false;
+        };
+
+        template<typename Factory, typename Stream>
+        struct ContinuationsFactoryForTraits<Factory,
+                                             Stream,
+                                             VoidT<::std::enable_if_t<IsContinuationForV<decltype(::std::declval<Factory>().template createContinuation<Stream>()), Stream>>>
+                                            >
+        {
+            static constexpr bool IsFactory = true;
+        };
+
+        template<typename Factory, typename Stream>
+        static constexpr bool IsContinuationsFactoryForV = ContinuationsFactoryForTraits<Factory, Stream>::IsFactory;
+        // ============================================================================================================
+
+        // ============================================================================================================
+        template<typename T>
+        struct UnwrapValueHolder
+        {
+            using Type = T;
+        };
+
+        template<typename T>
+        struct UnwrapValueHolder<ValueHolder<T>> : UnwrapValueHolder<T>
+        {};
+
+        template<typename T>
+        using UnwrapValueHolderT = typename UnwrapValueHolder<T>::Type;
+        // ============================================================================================================
+    };
 }
 
 #endif //CPP_STREAM_DETAIL_TRAITS_IMPL_H

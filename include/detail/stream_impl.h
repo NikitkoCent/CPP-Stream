@@ -2,37 +2,36 @@
 #define CPP_STREAM_DETAIL_STREAM_IMPL_H
 
 #include "stream_base.h"        // StreamBase
-#include "utility.h"            // VoidT
-#include "traits_impl.h"        // ContainerTraits
-#include "stream_traits_impl.h" // IsStreamFilterFor
-#include "stream_filter_impl.h" // StreamFilter
-#include <optional>             // ::std::optional
-#include <utility>              // ::std::move, ::std::forward, ::std::declval
-#include <type_traits>          // ::std::enable_if_t, ::std::is_reference, ::std::is_const
+#include "continuation_impl.h"  // Continuation
+#include "traits_impl.h"        // VoidT, ContainerTraits, IsContainerV, IsGeneratorV, IsRangeV
+#include <type_traits>          // ::std::remove_reference_t, ::std::enable_if_t, ::std::is_reference, ::std::decay_t
+#include <utility>              // ::std::move, ::std::forward
 #include <initializer_list>     // ::std::initializer_list
 #include <functional>           // ::std::reference_wrapper
-#include <iterator>             // ::std::iterator_traits
 
 namespace stream
 {
     namespace detail
     {
-        template<typename, typename, typename, typename = void>
+        template<typename T, typename Source, typename Derived, typename = void>
         class StreamImpl;
 
-        // Container
-        template<typename T, typename Container, typename Stream>
-        class StreamImpl<T, Container, Stream, VoidT< ::std::enable_if_t<ContainerTraits<Container>::IsContainer>,
-                                                      ::std::enable_if_t<!::std::is_reference<Container>::value>,
-                                                      ::std::enable_if_t<!::std::is_const<Container>::value> >
-                        > : public StreamBase<T, true, Stream>
+
+        // Container (non-reference)
+        template<typename T, typename Container, typename Derived>
+        class StreamImpl<T,
+                         Container,
+                         Derived,
+                         VoidT<::std::enable_if_t<IsContainerV<Container>>,
+                               ::std::enable_if_t<!::std::is_reference<Container>::value>>
+                        > : public StreamBase<T, true, Derived>
         {
         public:
-            using Type = typename StreamBase<T, true, Stream>::Type;
+            using RealType = stream::ValueHolder<CopyCVT<typename ContainerTraits<Container>::ReferenceType,
+                                                         typename StreamBase<T, true, Derived>::ValueType&>>;
 
-
-            StreamImpl() = default;
-
+            StreamImpl()
+            {}
 
             StreamImpl(Container &&container)
                 : container(::std::move(container))
@@ -49,14 +48,14 @@ namespace stream
             }
 
 
-            ::std::optional<Type> getNext()
+            ::std::optional<RealType> getNext()
             {
                 if (isEndImpl())
                 {
-                    return { ::std::nullopt };
+                    return ::std::nullopt;
                 }
 
-                return ::std::move(*iterator++);
+                return *it++;
             }
 
         protected:
@@ -64,16 +63,16 @@ namespace stream
             {
                 if (!iteratorInitialized)
                 {
-                    iterator = container.begin();
                     iteratorInitialized = true;
+                    it = container.begin();
                 }
 
-                return (iterator == container.end());
+                return (it == container.end());
             }
 
         private:
             mutable Container container;
-            mutable typename ContainerTraits<Container>::Iterator iterator;
+            mutable typename ContainerTraits<Container>::Iterator it;
             mutable bool iteratorInitialized = false;
 
 
@@ -92,28 +91,35 @@ namespace stream
         };
 
 
-        // Container cref
-        template<typename T, typename Container, typename Stream>
-        class StreamImpl<T, const Container&, Stream, VoidT<::std::enable_if_t<ContainerTraits<Container>::IsContainer>>
-                        > : public StreamBase<T, true, Stream>
+        // Container reference
+        template<typename T, typename ContainerRef, typename Derived>
+        class StreamImpl<T,
+                         ContainerRef,
+                         Derived,
+                         VoidT<::std::enable_if_t<IsContainerV<ContainerRef>>,
+                               ::std::enable_if_t<::std::is_reference<ContainerRef>::value>>
+                        > : public StreamBase<T, true, Derived>
         {
         public:
-            using Type = typename StreamBase<T, true, Stream>::Type;
+            static_assert(!::std::is_rvalue_reference<ContainerRef>::value, "RValue references isn't allowed");
+
+            using RealType = stream::ValueHolder<CopyCVT<typename ContainerTraits<ContainerRef>::ReferenceType,
+                                                         typename StreamBase<T, true, Derived>::ValueType&>>;
 
 
-            StreamImpl(const Container &container)
-                : container(container)
+            StreamImpl(ContainerRef containerRef)
+                : containerRef(containerRef)
             {}
 
 
-            ::std::optional<::std::reference_wrapper<const Type>> getNext()
+            ::std::optional<RealType> getNext()
             {
                 if (isEndImpl())
                 {
-                    return { ::std::nullopt };
+                    return ::std::nullopt;
                 }
 
-                return ::std::cref(*iterator++);
+                return *it++;
             }
 
         protected:
@@ -121,27 +127,30 @@ namespace stream
             {
                 if (!iteratorInitialized)
                 {
-                    iterator = container.get().begin();
                     iteratorInitialized = true;
+                    it = containerRef.get().begin();
                 }
 
-                return (iterator == container.get().end());
+                return (it == containerRef.get().end());
             }
 
         private:
-            ::std::reference_wrapper<const Container> container;
-            mutable typename ContainerTraits<Container>::ConstIterator iterator;
+            ::std::reference_wrapper<::std::remove_reference_t<ContainerRef>> containerRef;
+            mutable typename ContainerTraits<ContainerRef>::Iterator it;
             mutable bool iteratorInitialized = false;
         };
 
 
         // Generator
-        template<typename T, typename Generator, typename Stream>
-        class StreamImpl<T, Generator, Stream, VoidT<InvokeResultT<::std::decay_t<Generator>>>
-                        > : public StreamBase<T, false, Stream>
+        template<typename T, typename Generator, typename Derived>
+        class StreamImpl<T,
+                        Generator,
+                        Derived,
+                        VoidT<::std::enable_if_t<IsGeneratorV<Generator>>>
+                        > : public StreamBase<T, false, Derived>
         {
         public:
-            using Type = typename StreamBase<T, false, Stream>::Type;
+            using RealType = ValueHolder<typename GeneratorTraits<Generator>::ValueType>;
 
 
             template<typename Callable>
@@ -150,7 +159,7 @@ namespace stream
             {}
 
 
-            ::std::optional<Type> getNext()
+            ::std::optional<RealType> getNext()
             {
                 return generator();
             }
@@ -161,54 +170,135 @@ namespace stream
 
 
         // Range
-        template<typename T, typename Iterator, typename Stream>
-        class StreamImpl<T, Iterator, Stream,
-                         VoidT<::std::enable_if_t<::std::is_base_of<::std::input_iterator_tag,
-                                                                typename ::std::iterator_traits<Iterator>::iterator_category>::value>>
-                        > : public StreamBase<T, true, Stream>
+        template<typename T, typename Iterator, typename Derived>
+        class StreamImpl<T,
+                         Iterator,
+                         Derived,
+                         VoidT<::std::enable_if_t<IsRangeV<Iterator>>>
+                        > : public StreamBase<T, true, Derived>
         {
         public:
-            using Type = typename StreamBase<T, true, Stream>::Type;
+            using RealType = ValueHolder<typename RangeTraits<Iterator>::ValueType>;
 
 
             template<typename B, typename E>
-            StreamImpl(B &&begin, E &&end)
-                : begin(::std::forward<B>(begin)), end(::std::forward<E>(end))
+            StreamImpl(B &&rangeBegin, E &&rangeEnd)
+                : rangeBegin(::std::forward<B>(rangeBegin)), rangeEnd(::std::forward<E>(rangeEnd))
             {}
 
-
-            ::std::optional<Type> getNext()
+            ::std::optional<RealType> getNext()
             {
                 if (isEndImpl())
                 {
-                    return { ::std::nullopt };
+                    return ::std::nullopt;
                 }
 
-                return *begin++;
+                return ::std::move(*rangeBegin++);
             }
 
         protected:
             bool isEndImpl() const
             {
-                return (begin == end);
+                return (rangeBegin == rangeEnd);
             }
 
         private:
-            Iterator begin;
-            Iterator end;
+            Iterator rangeBegin;
+            Iterator rangeEnd;
         };
 
 
-        // StreamFilter
-        template<typename T, typename S, typename Filter, typename Stream>
-        class StreamImpl<T, StreamFilter<S, Filter>, Stream,
-                         VoidT<::std::enable_if_t<IsStreamFilterFor<Filter, S>::value>>
-                        > : public StreamFilter<S, Filter, Stream>
+        // Combined
+        template<typename OldStream, typename Contin>
+        struct CombinedStreamTag;
+
+        template<typename OldStream, typename F, bool ManagesFiniteness>
+        struct CombinedStreamTag<OldStream, Continuation<F, ManagesFiniteness>>
+        {};
+
+        #define CS_PARENT StreamBase<T, StreamTraits<OldStream>::IsFinite | ManagesFiniteness, Derived>
+
+        template<typename T, typename F, bool ManagesFiniteness, typename Derived, typename OldStream>
+        class StreamImpl<T,
+                         CombinedStreamTag<OldStream, Continuation<F, ManagesFiniteness>>,
+                         Derived,
+                         void
+                        > : public CS_PARENT
         {
         public:
-            using StreamFilter<S, Filter, Stream>::StreamFilter;
+            using RealType = ValueHolder<T>;
+
+            StreamImpl(OldStream &&oldStream, Continuation<F, ManagesFiniteness> &&continuation)
+                : oldStream(::std::move(oldStream)), continuation(::std::move(continuation))
+            {}
+
+
+            ::std::optional<RealType> getNext()
+            {
+                if constexpr (CS_PARENT::IsFinite)
+                {
+                    if (isEndImpl())
+                    {
+                        return ::std::nullopt;
+                    }
+                }
+
+                auto oldNext = oldStream.getNext();
+                if (!oldNext)
+                {
+                    return ::std::nullopt;
+                }
+
+                if constexpr (ManagesFiniteness)
+                {
+                    auto result = continuation(::std::move(*oldNext), static_cast<const OldStream &>(oldStream), end);
+
+                    if (!result)
+                    {
+                        return ::std::nullopt;
+                    }
+
+                    return ::std::move(*result);
+                }
+                else
+                {
+                    auto result = continuation(::std::move(*oldNext), static_cast<const OldStream &>(oldStream));
+                    if (!result)
+                    {
+                        return ::std::nullopt;
+                    }
+
+                    return ::std::move(*result);
+                }
+            }
+
+        protected:
+            template<bool Fin = CS_PARENT::IsFinite>
+            ::std::enable_if_t<Fin, bool> isEndImpl() const
+            {
+                if constexpr (ManagesFiniteness)
+                {
+                    if constexpr (StreamTraits<OldStream>::IsFinite)
+                    {
+                        return end | oldStream.isEnd();
+                    }
+
+                    return end;
+                }
+                else
+                {
+                    return oldStream.isEnd();
+                }
+            }
+
+        private:
+            OldStream oldStream;
+            Continuation<F, ManagesFiniteness> continuation;
+            bool end = false;
         };
-    }
+
+        #undef CS_PARENT
+    };
 }
 
 #endif //CPP_STREAM_DETAIL_STREAM_IMPL_H

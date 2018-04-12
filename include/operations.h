@@ -1,20 +1,16 @@
-#ifndef CPP_STREAM_FILTERS_LIB_H
-#define CPP_STREAM_FILTERS_LIB_H
+#ifndef CPP_STREAM_OPERATIONS_H
+#define CPP_STREAM_OPERATIONS_H
 
-#include "stream_traits.h"              // StreamValueT
-#include "traits.h"                     // detail::InvokeResultT
-#include "filter.h"                     // makeFilter
-#include <cstddef>                      // ::std::size_t
-#include <optional>                     // ::std::optional
-#include <utility>                      // ::std::move, ::std::forward
-#include <stdexcept>                    // ::std::out_of_range
-#include <type_traits>                  // ::std::enable_if_t, ::std::conditional, ::std::is_reference, ::std::remove_reference_t
-#include <vector>                       // ::std::vector
+#include "stream.h"
+#include "traits.h"
+#include "continuation.h"
+#include <cstddef>
+#include <type_traits>
 
 
 namespace stream
 {
-    namespace filters
+    namespace ops
     {
         template<typename OStream>
         auto print_to(OStream &oStream, const char *delim = " ")
@@ -25,7 +21,7 @@ namespace stream
                     auto val = stream.getNext();
                     if (val)
                     {
-                        oStream << val.value();
+                        oStream << val.value().get();
                         break;
                     }
                 }
@@ -35,7 +31,7 @@ namespace stream
                     auto val = stream.getNext();
                     if (val)
                     {
-                        oStream << delim << val.value();
+                        oStream << delim << val.value().get();
                     }
                 }
 
@@ -46,8 +42,8 @@ namespace stream
 
         inline auto skip(::std::size_t amount)
         {
-            return makeFilter<false>([amount](auto &&value, auto &&stream, bool&) mutable {
-                using Type = stream::StreamValueT<decltype(stream)>;
+            return makeContinuation<false>([amount](auto &&value, auto &&stream) mutable {
+                using Type = typename stream::StreamTraits<decltype(stream)>::RealType;
 
                 if (amount > 0) {
                     --amount;
@@ -62,21 +58,19 @@ namespace stream
         template<typename Transform>
         auto map(Transform &&transform)
         {
-            return makeFilter<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto &&, bool&) mutable {
-                using ReturnType = detail::InvokeResultT<::std::decay_t<Transform>, decltype(value)>;
-                using Type = ::std::conditional_t<::std::is_reference<ReturnType>::value,
-                                                  ::std::reference_wrapper<::std::remove_reference_t<ReturnType>>,
-                                                  ReturnType>;
+            return makeContinuation<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto &&) mutable {
+                using ReturnType = ::std::invoke_result_t<decltype(transform), decltype(::std::move(value.get()))>;
+                using Type = ValueHolder<ReturnType>;
 
-                return ::std::optional<Type>{transform(::std::forward<decltype(value)>(value))};
+                return ::std::optional<Type>{transform(::std::move(value.get()))};
             });
         }
 
 
         inline auto get(::std::size_t n)
         {
-            return makeFilter<true>([n](auto &&value, auto &&stream, bool &end) mutable {
-                using Type = stream::StreamValueT<decltype(stream)>;
+            return makeContinuation<true>([n](auto &&value, auto &&stream, bool &end) mutable {
+                using Type = typename stream::StreamTraits<decltype(stream)>::RealType;
                 if (n > 0)
                 {
                     --n;
@@ -94,7 +88,7 @@ namespace stream
         auto reduce(Identity &&identity, Accumulator &&accumulator)
         {
             return [f1 = ::std::forward<Identity>(identity), fn = ::std::forward<Accumulator>(accumulator)](auto &&stream) mutable {
-                using Type = detail::InvokeResultT<decltype(f1), StreamValueT<decltype(stream)>&&>;
+                using Type = detail::InvokeResultT<decltype(f1), decltype(::std::move(stream.getNext()->get()))>;
 
                 if (stream.isEnd())
                 {
@@ -107,7 +101,7 @@ namespace stream
                     auto initializer = stream.getNext();
                     if (initializer)
                     {
-                        result = f1(*::std::move(initializer));
+                        result = f1(::std::move(initializer->get()));
                         break;
                     }
                 }
@@ -117,13 +111,14 @@ namespace stream
                     auto forReduce = stream.getNext();
                     if (forReduce)
                     {
-                        result = fn(::std::move(result), *::std::move(forReduce));
+                        result = fn(::std::move(result), ::std::move(forReduce->get()));
                     }
                 }
 
                 return result;
             };
         }
+
 
         template<typename Accumulator>
         auto reduce(Accumulator &&accumulator)
@@ -144,7 +139,7 @@ namespace stream
             return [index](auto &&stream) mutable {
                 while (index > 0)
                 {
-                    if constexpr (StreamFinitenessV<decltype(stream)>)
+                    if constexpr (StreamTraits<decltype(stream)>::IsFinite)
                     {
                         if (stream.isEnd())
                         {
@@ -161,7 +156,7 @@ namespace stream
                 auto result = stream.getNext();
                 while (!result)
                 {
-                    if constexpr (StreamFinitenessV<decltype(stream)>)
+                    if constexpr (StreamTraits<decltype(stream)>::IsFinite)
                     {
                         if (stream.isEnd())
                         {
@@ -172,7 +167,7 @@ namespace stream
                     result = stream.getNext();
                 }
 
-                return *::std::move(result);
+                return ::std::move(result->get());
             };
         }
 
@@ -180,7 +175,7 @@ namespace stream
         inline auto to_vector()
         {
             return [](auto &&stream) {
-                using Type = StreamValueT<decltype(stream)>;
+                using Type = typename StreamTraits<decltype(stream)>::ValueType;
 
                 ::std::vector<Type> result;
                 while (!stream.isEnd())
@@ -188,7 +183,7 @@ namespace stream
                     auto value = stream.getNext();
                     if (value)
                     {
-                        result.emplace_back(*::std::move(value));
+                        result.emplace_back(::std::move(value->get()));
                     }
                 }
 
@@ -200,9 +195,9 @@ namespace stream
         template<typename Predicate>
         auto filter(Predicate &&predicate)
         {
-            return makeFilter<false>([predicate = ::std::forward<Predicate>(predicate)](auto &&value, auto &&stream, bool&) {
-                using Type = StreamValueT<decltype(stream)>;
-                if (predicate(static_cast<const RemoveCRefT<decltype(value)>&>(value)))
+            return makeContinuation<false>([predicate = ::std::forward<Predicate>(predicate)](auto &&value, auto &&stream) {
+                using Type = typename StreamTraits<decltype(stream)>::RealType;
+                if (predicate(static_cast<const Type&>(value).get()))
                 {
                     return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
                 }
@@ -218,14 +213,14 @@ namespace stream
             group(::std::size_t n) : n(n) {}
 
 
-            template<typename Stream, typename ::std::enable_if_t<StreamFinitenessV<Stream>>* = nullptr>
-            auto createFilter()
+            template<typename Stream, ::std::enable_if_t<StreamTraits<Stream>::IsFinite>* = nullptr>
+            auto createContinuation()
             {
-                using Type = StreamValueT<Stream>;
+                using Type = typename StreamTraits<Stream>::ValueType;
 
                 ::std::size_t n = this->n;
-                return makeFilter<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&stream, bool&) mutable {
-                    vec.emplace_back(::std::forward<decltype(value)>(value));
+                return makeContinuation<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&stream) mutable {
+                    vec.emplace_back(::std::move(value.get()));
 
                     if ((vec.size() == n) || stream.isEnd())
                     {
@@ -236,14 +231,14 @@ namespace stream
                 });
             }
 
-            template<typename Stream, typename ::std::enable_if_t<!StreamFinitenessV<Stream>>* = nullptr>
-            auto createFilter()
+            template<typename Stream, ::std::enable_if_t<!StreamTraits<Stream>::IsFinite>* = nullptr>
+            auto createContinuation()
             {
-                using Type = StreamValueT<Stream>;
+                using Type = typename StreamTraits<Stream>::ValueType;
 
                 ::std::size_t n = this->n;
-                return makeFilter<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&, bool&) mutable {
-                    vec.emplace_back(::std::forward<decltype(value)>(value));
+                return makeContinuation<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&) mutable {
+                    vec.emplace_back(::std::move(value.get()));
 
                     if (vec.size() == n)
                     {
@@ -260,4 +255,4 @@ namespace stream
     }
 }
 
-#endif //CPP_STREAM_FILTERS_LIB_H
+#endif //CPP_STREAM_OPERATIONS_H

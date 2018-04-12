@@ -1,5 +1,5 @@
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <vector>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -20,7 +20,7 @@ namespace
 
 
 using namespace stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_MOVE_ONLY_INFINITE_STREAM, GET_0)

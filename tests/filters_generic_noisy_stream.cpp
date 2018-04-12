@@ -1,6 +1,6 @@
 #include "noisy.h"
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <list>
 #include <vector>
 #include <string>
@@ -11,7 +11,7 @@
 
 
 using stream::Stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_GENERIC_NOISY_STREAM, REF_CONTAINER)
@@ -27,7 +27,7 @@ TEST(FILTERS_GENERIC_NOISY_STREAM, REF_CONTAINER)
 
     auto result = Stream(list)
                   | filter([](auto &&v){ return v.value > 2; })
-                  | map([](auto &&v){ v.value = v.value * v.value; return std::move(v); })
+                  | map([](auto &&v){ return Noisy(v.value * v.value); })
                   | map([](auto &&v){ ++v.value; return std::move(v); })
                   | filter([](auto &&v) { return v.value > 25; })
                   | to_vector();
@@ -128,7 +128,7 @@ TEST(FILTERS_GENERIC_NOISY_STREAM, RANGE)
                   | filter([](auto &&v) { return v.value > 25; })
                   | to_vector();
 
-    ASSERT_EQ(Noisy::copyCount, 0);
+    ASSERT_EQ(Noisy::copyCount, 10);    // because Range consists of InputIterators
 
     ASSERT_EQ(result.size(), 6U);
     ASSERT_EQ(result[0].value, 26);

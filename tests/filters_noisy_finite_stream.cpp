@@ -1,6 +1,6 @@
 #include "noisy.h"
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <vector>
 #include <sstream>
 #include <type_traits>
@@ -9,7 +9,7 @@
 
 
 using namespace stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_NOISY_FINITE_STREAM, PRINT_TO_EMPTY)

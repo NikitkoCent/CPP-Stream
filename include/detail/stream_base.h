@@ -1,62 +1,61 @@
 #ifndef CPP_STREAM_DETAIL_STREAM_BASE_H
 #define CPP_STREAM_DETAIL_STREAM_BASE_H
 
-#include "traits_impl.h"                    // InvokeResultT
-#include "stream_traits_impl.h"             // IsStreamFilterFor
-#include "is_filters_factory_for_impl.h"    // IsFiltersFactoryFor
-#include <type_traits>                      // ::std::enable_if_t, ::std::decay_t, ::std::is_reference
-#include <utility>                          // ::std::move, ::std::forward
+#include "traits_impl.h"
+#include <type_traits>  // ::std::enable_if_t
+#include <optional>     // ::std::optional
+#include "../value_holder.h"
 
 namespace stream
 {
     template<typename, typename>
     struct Stream;
 
+
     namespace detail
     {
-        template<typename, typename, typename>
-        class StreamFilter;
+        template<typename OldStream, typename Contin>
+        struct CombinedStreamTag;
 
 
-        template<typename T, bool Finiteness, typename StreamImpl>
-        class StreamBase
+        template<typename T, bool Finiteness, typename Derived>
+        struct StreamBase
         {
-        public:
-            using Type = ::std::conditional_t<::std::is_reference<T>::value,
-                                              ::std::reference_wrapper<::std::remove_reference_t<T>>,
-                                              T>;
+            using ValueType = RemoveCVRefT<T>;
             static constexpr bool IsFinite = Finiteness;
-
-
-            template<typename Filter, typename ::std::enable_if_t<IsStreamFilterFor<Filter, StreamImpl>::value>* = nullptr>
-            auto operator|(Filter &&filter)
-            {
-                using V = typename InvokeResultT<::std::decay_t<Filter>, Type&&, const StreamImpl&, bool&>::value_type;
-                return stream::Stream<V, StreamFilter<StreamImpl, Filter, void>>(::std::move(static_cast<StreamImpl&>(*this)),
-                                                                                 ::std::forward<Filter>(filter));
-            }
-
-
-            template<typename Factory, typename ::std::enable_if_t<!IsStreamFilterFor<Factory, StreamImpl>::value
-                                                                   && IsFiltersFactoryFor<Factory, StreamImpl>::value>* = nullptr>
-            auto operator|(Factory &&factory)
-            {
-                return operator|(::std::forward<Factory>(factory).template createFilter<StreamImpl>());
-            };
-
-
-            template<typename Term, typename ::std::enable_if_t<!IsStreamFilterFor<Term, StreamImpl>::value
-                                                                && !IsFiltersFactoryFor<Term, StreamImpl>::value>* = nullptr>
-            decltype(auto) operator|(Term &&nonFilter)
-            {
-                return ::std::forward<Term>(nonFilter)(::std::move(static_cast<StreamImpl&>(*this)));
-            }
 
 
             bool isEnd() const
             {
-                static_assert(IsFinite, "This stream is infinite");
-                return static_cast<const StreamImpl *>(this)->isEndImpl();
+                static_assert(IsFinite, "This Stream is infinite");
+                return static_cast<const Derived*>(this)->isEndImpl();
+            }
+
+
+            template<typename Contin, ::std::enable_if_t<IsContinuationForV<Contin, Derived>>* = nullptr>
+            auto operator|(Contin &&contin)
+            {
+                using V = UnwrapValueHolderT<typename ContinuationForTraits<Contin, Derived>::ValueType>;
+                using RetStreamT = stream::Stream<V, CombinedStreamTag<Derived, ::std::remove_reference_t<Contin>>>;
+
+                return RetStreamT(::std::move(static_cast<Derived&>(*this)), ::std::forward<Contin>(contin));
+            }
+
+
+            template<typename Factory, ::std::enable_if_t<!IsContinuationForV<Factory, Derived>
+                                                          && IsContinuationsFactoryForV<Factory, Derived>>* = nullptr>
+            auto operator|(Factory &&factory)
+            {
+                return operator|(::std::forward<Factory>(factory).template createContinuation<Derived>());
+            }
+
+
+            template<typename Consumer, ::std::enable_if_t< !IsContinuationForV<Consumer, Derived>
+                                                            && !IsContinuationsFactoryForV<Consumer, Derived>
+                                                            && IsConsumerForV<Consumer, Derived> >* = nullptr>
+            decltype(auto) operator|(Consumer &&consumer)
+            {
+                return ::std::forward<Consumer>(consumer)(::std::move(static_cast<Derived&>(*this)));
             }
         };
     }
