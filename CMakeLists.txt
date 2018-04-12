@@ -62,8 +62,8 @@ add_executable(unittesting include/stream.h
                            include/detail/stream_impl.h
                            include/detail/continuation_impl.h
                            tests/stream_deduction_guides.cpp
-                           #[[tests/filters_int_finite_stream.cpp
-                           tests/filters_int_infinite_stream.cpp
+                           tests/filters_int_finite_stream.cpp
+                           #[[tests/filters_int_infinite_stream.cpp
                            tests/filters_generic_int_stream.cpp
                            tests/filters_move_only_finite_stream.cpp
                            tests/filters_move_only_infinite_stream.cpp

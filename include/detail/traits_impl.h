@@ -203,6 +203,39 @@ namespace stream
 
         // ============================================================================================================
         template<typename C, typename S, typename = void>
+        struct ContinuationInvokeResult
+        {};
+
+        template<typename C, typename S>
+        struct ContinuationInvokeResult<Continuation<C, false>, S,
+                                        VoidT<InvokeResultT<Continuation<C, false>,
+                                                            typename StreamTraits<S>::RealType&&,
+                                                            const S&>>>
+        {
+            using Type = InvokeResultT<Continuation<C, false>,
+                                       typename StreamTraits<S>::RealType&&,
+                                       const S&>;
+        };
+
+        template<typename C, typename S>
+        struct ContinuationInvokeResult<Continuation<C, true>, S,
+                                        VoidT<InvokeResultT<Continuation<C, true>,
+                                                            typename StreamTraits<S>::RealType&&,
+                                                            const S&,
+                                                            bool&>>>
+        {
+            using Type = InvokeResultT<Continuation<C, true>,
+                                       typename StreamTraits<S>::RealType&&,
+                                       const S&,
+                                       bool&>;
+        };
+
+        template<typename C, typename S>
+        using ContinuationInvokeResultT = typename ContinuationInvokeResult<C, S>::Type;
+
+
+
+        template<typename C, typename S, typename = void>
         struct ContinuationForTraitsImpl
         {
             static constexpr bool IsContinuation = false;
@@ -219,6 +252,11 @@ namespace stream
                                             decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
                                             const S&>;
         };
+
+        template<typename C, typename S>
+        struct ContinuationForTraitsImpl<Continuation<C, false>, S,
+                                         VoidT<::std::enable_if_t<::std::is_same<>::value>>
+                                        >
 
         template<typename C, typename S>
         struct ContinuationForTraitsImpl<Continuation<C, true>, S,

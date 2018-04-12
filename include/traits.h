@@ -16,6 +16,8 @@ namespace stream
 
     using detail::ContainerTraits;
     using detail::IsContainerV;
+
+    using detail::StreamTraits;
 }
 
 #endif //CPP_STREAM_TRAITS_H
