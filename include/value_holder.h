@@ -11,7 +11,7 @@ namespace stream
     class ValueHolder
     {
     public:
-        static_assert(::std::is_rvalue_reference<T>::value, "RValue references isn't allowed");
+        static_assert(!::std::is_rvalue_reference<T>::value, "RValue references isn't allowed");
 
         template<typename... Args>
         ValueHolder(Args&&... args)

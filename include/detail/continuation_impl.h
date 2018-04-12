@@ -17,13 +17,15 @@ namespace stream
                 : continuation(::std::forward<F>(continuation))
             {}
 
-            template<typename V, typename S, typename ::std::enable_if_t<ManagesFiniteness>* = nullptr>
+            template<typename V, typename S, bool Fin = ManagesFiniteness,
+                     ::std::enable_if_t<Fin>* = nullptr>
             decltype(auto) operator()(V &&value, const S& stream, bool &end)
             {
                 return continuation(::std::forward<V>(value), stream, end);
             }
 
-            template<typename V, typename S, typename ::std::enable_if_t<!ManagesFiniteness>* = nullptr>
+            template<typename V, typename S, bool Fin = ManagesFiniteness,
+                     ::std::enable_if_t<!Fin>* = nullptr>
             decltype(auto) operator()(V &&value, const S& stream)
             {
                 return continuation(::std::forward<V>(value), stream);

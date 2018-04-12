@@ -35,7 +35,7 @@ namespace stream
             {}
 
             StreamImpl(Container &&container)
-                : container(::std::move(container)), it(container.begin())
+                : container(::std::move(container)), it(this->container.begin())
             {}
 
             StreamImpl(::std::initializer_list<T> initList)
@@ -223,7 +223,6 @@ namespace stream
         public:
             using RealType = ValueHolder<T>;
 
-
             StreamImpl(OldStream &&oldStream, Continuation<F, ManagesFiniteness> &&continuation)
                 : oldStream(::std::move(oldStream)), continuation(::std::move(continuation))
             {}
@@ -247,11 +246,24 @@ namespace stream
 
                 if constexpr (ManagesFiniteness)
                 {
-                    return continuation(::std::move(oldNext).get(), static_cast<const OldStream &>(oldStream), end);
+                    auto result = continuation(::std::move(*oldNext), static_cast<const OldStream &>(oldStream), end);
+
+                    if (!result)
+                    {
+                        return ::std::nullopt;
+                    }
+
+                    return ::std::move(*result);
                 }
                 else
                 {
-                    return continuation(::std::move(oldNext).get(), static_cast<const OldStream &>(oldStream));
+                    auto result = continuation(::std::move(*oldNext), static_cast<const OldStream &>(oldStream));
+                    if (!result)
+                    {
+                        return ::std::nullopt;
+                    }
+
+                    return ::std::move(*result);
                 }
             }
 
