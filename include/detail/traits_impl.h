@@ -1,6 +1,7 @@
 #ifndef CPP_STREAM_DETAIL_TRAITS_IMPL_H
 #define CPP_STREAM_DETAIL_TRAITS_IMPL_H
 
+#include "continuation_impl.h"
 #include <type_traits>  // ::std::invoke_result_t, ::std::decay_t, ::std::enable_if_t, ::std::is_same, ::std::is_base_of
 #include <iterator>     // ::std::iterator_traits, ::std::forward_iterator_tag, ::std::input_iterator_tag
 #include <utility>      // ::std::declval
@@ -10,9 +11,6 @@ namespace stream
 {
     template<typename T, typename Source>
     struct Stream;
-
-    template<typename T, bool Fin>
-    class Continuation;
 
     template<typename T>
     class ValueHolder;
@@ -216,17 +214,17 @@ namespace stream
 
 
         template<typename C, typename S, typename = void>
-        struct ContinutationForTraitsImpl
+        struct ContinuationForTraitsImpl
         {
             static constexpr bool IsContinuation = false;
         };
 
         template<typename C, typename S>
-        struct ContinutationForTraitsImpl<Continuation<C, false>, S,
-                                          VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, false>,
-                                                                                             typename StreamTraits<S>::RealType&&,
-                                                                                             const S&>>>>
-                                         >
+        struct ContinuationForTraitsImpl<Continuation<C, false>, S,
+                                         VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, false>,
+                                                                                            typename StreamTraits<S>::RealType&&,
+                                                                                            const S&>>>>
+                                        >
         {
             static constexpr bool IsContinuation = true;
             using ValueType = typename InvokeResultT<Continuation<C, false>,
@@ -235,12 +233,12 @@ namespace stream
         };
 
         template<typename C, typename S>
-        struct ContinutationForTraitsImpl<Continuation<C, true>, S,
-                                          VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, true>,
-                                                                                             typename StreamTraits<S>::RealType&&,
-                                                                                             const S&,
-                                                                                             bool&>>>>
-                                         >
+        struct ContinuationForTraitsImpl<Continuation<C, true>, S,
+                                         VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, true>,
+                                                                                            typename StreamTraits<S>::RealType&&,
+                                                                                            const S&,
+                                                                                            bool&>>>>
+                                        >
         {
             static constexpr bool IsContinuation = true;
             using ValueType = typename InvokeResultT<Continuation<C, true>,
