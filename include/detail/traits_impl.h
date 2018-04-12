@@ -4,6 +4,7 @@
 #include <type_traits>  // ::std::invoke_result_t, ::std::decay_t, ::std::enable_if_t, ::std::is_same, ::std::is_base_of
 #include <iterator>     // ::std::iterator_traits, ::std::forward_iterator_tag, ::std::input_iterator_tag
 #include <utility>      // ::std::declval
+#include <optional>     // ::std::optional
 
 namespace stream
 {
@@ -202,74 +203,50 @@ namespace stream
         // ============================================================================================================
 
         // ============================================================================================================
-        template<typename C, typename S, typename = void>
-        struct ContinuationInvokeResult
+        template<typename T>
+        struct IsOptional : ::std::false_type
         {};
 
-        template<typename C, typename S>
-        struct ContinuationInvokeResult<Continuation<C, false>, S,
-                                        VoidT<InvokeResultT<Continuation<C, false>,
-                                                            typename StreamTraits<S>::RealType&&,
-                                                            const S&>>>
-        {
-            using Type = InvokeResultT<Continuation<C, false>,
-                                       typename StreamTraits<S>::RealType&&,
-                                       const S&>;
-        };
+        template<typename... Args>
+        struct IsOptional<::std::optional<Args...>> : ::std::true_type
+        {};
 
-        template<typename C, typename S>
-        struct ContinuationInvokeResult<Continuation<C, true>, S,
-                                        VoidT<InvokeResultT<Continuation<C, true>,
-                                                            typename StreamTraits<S>::RealType&&,
-                                                            const S&,
-                                                            bool&>>>
-        {
-            using Type = InvokeResultT<Continuation<C, true>,
-                                       typename StreamTraits<S>::RealType&&,
-                                       const S&,
-                                       bool&>;
-        };
-
-        template<typename C, typename S>
-        using ContinuationInvokeResultT = typename ContinuationInvokeResult<C, S>::Type;
-
+        template<typename T>
+        static constexpr bool IsOptionalV = IsOptional<T>::value;
 
 
         template<typename C, typename S, typename = void>
-        struct ContinuationForTraitsImpl
+        struct ContinutationForTraitsImpl
         {
             static constexpr bool IsContinuation = false;
         };
 
         template<typename C, typename S>
-        struct ContinuationForTraitsImpl<Continuation<C, false>, S,
-                                         VoidT<InvokeResultT<Continuation<C, false>,
-                                                             decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
-                                                             const S&>>>
+        struct ContinutationForTraitsImpl<Continuation<C, false>, S,
+                                          VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, false>,
+                                                                                             typename StreamTraits<S>::RealType&&,
+                                                                                             const S&>>>>
+                                         >
         {
             static constexpr bool IsContinuation = true;
-            using ValueType = InvokeResultT<Continuation<C, false>,
-                                            decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
-                                            const S&>;
+            using ValueType = typename InvokeResultT<Continuation<C, false>,
+                                                     typename StreamTraits<S>::RealType&&,
+                                                     const S&>::value_type;
         };
 
         template<typename C, typename S>
-        struct ContinuationForTraitsImpl<Continuation<C, false>, S,
-                                         VoidT<::std::enable_if_t<::std::is_same<>::value>>
-                                        >
-
-        template<typename C, typename S>
-        struct ContinuationForTraitsImpl<Continuation<C, true>, S,
-                                         VoidT<InvokeResultT<Continuation<C, true>,
-                                                             decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
-                                                             const S&,
-                                                             bool&>>>
+        struct ContinutationForTraitsImpl<Continuation<C, true>, S,
+                                          VoidT<::std::enable_if_t<IsOptionalV<InvokeResultT<Continuation<C, true>,
+                                                                                             typename StreamTraits<S>::RealType&&,
+                                                                                             const S&,
+                                                                                             bool&>>>>
+                                         >
         {
             static constexpr bool IsContinuation = true;
-            using ValueType = InvokeResultT<Continuation<C, true>,
-                                            decltype(::std::declval<typename StreamTraits<S>::RealType>().get()),
-                                            const S&,
-                                            bool&>;
+            using ValueType = typename InvokeResultT<Continuation<C, true>,
+                                                     typename StreamTraits<S>::RealType&&,
+                                                     const S&,
+                                                     bool&>::value_type;
         };
 
         template<typename C, typename Stream>
