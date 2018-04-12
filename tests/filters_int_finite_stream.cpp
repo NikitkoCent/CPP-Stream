@@ -50,7 +50,7 @@ TEST(FILTERS_INT_FINITE_STREAM, PRINT_TO_GENERIC)
     stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9) | print_to(stream);
     ASSERT_EQ(stream.str(), "1 2 3 4 5 6 7 8 9");
 }
-/*
+
 
 
 TEST(FILTERS_INT_FINITE_STREAM, SKIP_0)
@@ -87,6 +87,7 @@ TEST(FILTERS_INT_FINITE_STREAM, MAP_EMPTY)
     ASSERT_TRUE((stream::Stream<int>() | map([](auto &&v){ return std::move(v); }) | to_vector()).empty());
 }
 
+
 TEST(FILTERS_INT_FINITE_STREAM, MAP_1)
 {
     ASSERT_THAT((stream::Stream(15) | map([](auto &&v){ return v * v; }) | to_vector()), testing::ElementsAre(225));
@@ -97,6 +98,7 @@ TEST(FILTERS_INT_FINITE_STREAM, MAP_GENERIC)
     ASSERT_THAT((stream::Stream(-1, 2, -3, 4, -5, 6, -7, 8, -9) | map([](auto &&v){ return v * v ;}) | to_vector()),
                 testing::ElementsAre(1, 4, 9, 16, 25, 36, 49, 64, 81));
 }
+
 
 
 TEST(FILTERS_INT_FINITE_STREAM, GET_0_EMPTY)
@@ -352,4 +354,3 @@ TEST(FILTERS_INT_FINITE_STREAM, GROUP_GENERIC_TO_ONE_MORE2)
     ASSERT_EQ(result.size(), 1U);
     ASSERT_THAT(result[0], testing::ElementsAre(1, 2, 3, 4, 5, 6, 7, 8, 9));
 }
-*/

@@ -31,22 +31,20 @@ namespace stream
                                                          typename StreamBase<T, true, Derived>::ValueType&>>;
 
             StreamImpl()
-                : it(container.begin())
             {}
 
             StreamImpl(Container &&container)
-                : container(::std::move(container)), it(this->container.begin())
+                : container(::std::move(container))
             {}
 
             StreamImpl(::std::initializer_list<T> initList)
-                : container(initList), it(container.begin())
+                : container(initList)
             {}
 
             template<typename Arg1, typename... Args>
             StreamImpl(Arg1 &&arg1, Args&&... args)
             {
                 initialize(::std::forward<Arg1>(arg1), ::std::forward<Args>(args)...);
-                it = container.begin();
             }
 
 
@@ -63,12 +61,19 @@ namespace stream
         protected:
             bool isEndImpl() const
             {
+                if (!iteratorInitialized)
+                {
+                    iteratorInitialized = true;
+                    it = container.begin();
+                }
+
                 return (it == container.end());
             }
 
         private:
-            Container container;
-            typename ContainerTraits<Container>::Iterator it;
+            mutable Container container;
+            mutable typename ContainerTraits<Container>::Iterator it;
+            mutable bool iteratorInitialized = false;
 
 
             template<typename Arg1>

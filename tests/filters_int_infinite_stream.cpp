@@ -1,5 +1,5 @@
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -19,7 +19,7 @@ namespace
 
 
 using namespace stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_INT_INFINITE_STREAM, GET_0)

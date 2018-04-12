@@ -1,5 +1,5 @@
 #include <stream.h>
-#include <filters_lib.h>
+#include <operations.h>
 #include <vector>
 #include <sstream>
 #include <type_traits>
@@ -9,7 +9,7 @@
 
 
 using namespace stream;
-using namespace stream::filters;
+using namespace stream::ops;
 
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, SKIP_0)

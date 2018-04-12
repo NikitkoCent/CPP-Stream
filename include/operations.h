@@ -58,8 +58,8 @@ namespace stream
         template<typename Transform>
         auto map(Transform &&transform)
         {
-            return makeContinuation<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto &&stream) mutable {
-                using ReturnType = detail::InvokeResultT<::std::decay_t<Transform>, decltype(::std::move(value.get()))>;
+            return makeContinuation<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto &&) mutable {
+                using ReturnType = ::std::invoke_result_t<decltype(transform), decltype(::std::move(value.get()))>;
                 using Type = ValueHolder<ReturnType>;
 
                 return ::std::optional<Type>{transform(::std::move(value.get()))};
@@ -87,8 +87,7 @@ namespace stream
         template<typename Identity, typename Accumulator>
         auto reduce(Identity &&identity, Accumulator &&accumulator)
         {
-            return [f1 = ::std::forward<Identity>(identity), fn = ::std::forward<Accumulator>(accumulator)](
-                auto &&stream) mutable {
+            return [f1 = ::std::forward<Identity>(identity), fn = ::std::forward<Accumulator>(accumulator)](auto &&stream) mutable {
                 using Type = detail::InvokeResultT<decltype(f1), decltype(::std::move(stream.getNext()->get()))>;
 
                 if (stream.isEnd())
@@ -238,7 +237,7 @@ namespace stream
                 using Type = typename StreamTraits<Stream>::ValueType;
 
                 ::std::size_t n = this->n;
-                return makeContinuation<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&stream) mutable {
+                return makeContinuation<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&) mutable {
                     vec.emplace_back(::std::move(value.get()));
 
                     if (vec.size() == n)
