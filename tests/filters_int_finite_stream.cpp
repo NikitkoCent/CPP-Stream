@@ -137,7 +137,10 @@ TEST(FILTERS_INT_FINITE_STREAM, GET_OUT_OF_RANGE)
 }
 
 
-auto sumReducer = [](auto &&v1, auto &&v2) { return v1 + v2; };
+namespace
+{
+   auto sumReducer = [](auto&& v1, auto&& v2) { return v1 + v2; };
+}
 
 TEST(FILTERS_INT_FINITE_STREAM, REDUCE_EMPTY)
 {
@@ -159,8 +162,11 @@ TEST(FILTERS_INT_FINITE_STREAM, REDUCE_GENERIC)
     ASSERT_EQ(stream::Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) | reduce(sumReducer), 55);
 }
 
-auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(num)); };
-auto stringInit = [](auto &&num) { return std::to_string(num); };
+namespace
+{
+   auto stringReducer = [](auto&& str, auto&& num) { return std::move(str += " " + std::to_string(num)); };
+   auto stringInit = [](auto&& num) { return std::to_string(num); };
+}
 
 TEST(FILTERS_INT_FINITE_STREAM, REDUCE_TO_STRING_EMPTY)
 {

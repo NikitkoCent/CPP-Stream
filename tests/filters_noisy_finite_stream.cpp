@@ -245,7 +245,10 @@ TEST(FILTERS_NOISY_FINITE_STREAM, GET_OUT_OF_RANGE)
 }
 
 
-auto sumReducer = [](auto &&v1, auto &&v2) { v1.value = v1.value + v2.value; return std::move(v1); };
+namespace
+{
+   auto sumReducer = [](auto&& v1, auto&& v2) { v1.value = v1.value + v2.value; return std::move(v1); };
+}
 
 TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_EMPTY)
 {
@@ -296,8 +299,11 @@ TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_GENERIC)
     ASSERT_EQ(result.value, 55);
 }
 
-auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(num.value)); };
-auto stringInit = [](auto &&num) { return std::to_string(num.value); };
+namespace
+{
+   auto stringReducer = [](auto&& str, auto&& num) { return std::move(str += " " + std::to_string(num.value)); };
+   auto stringInit = [](auto&& num) { return std::to_string(num.value); };
+}
 
 TEST(FILTERS_NOISY_FINITE_STREAM, REDUCE_TO_STRING_EMPTY)
 {

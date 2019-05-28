@@ -77,7 +77,8 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_EMPTY)
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, MAP_1)
 {
-    auto vec = Stream(std::make_unique<int>(15))
+    Stream myStream(std::make_unique<int>(15));
+    auto vec = myStream
                | map([](auto &&v){ *v = *v * *v; return std::move(v); })
                | to_vector();
 
@@ -175,7 +176,10 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, GET_OUT_OF_RANGE)
 }
 
 
-auto sumReducer = [](auto &&v1, auto &&v2) { *v1 = *v1 + *v2; return std::move(v1); };
+namespace
+{
+   auto sumReducer = [](auto&& v1, auto&& v2) { *v1 = *v1 + *v2; return std::move(v1); };
+}
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_EMPTY)
 {
@@ -209,8 +213,11 @@ TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_GENERIC)
                 | reduce(sumReducer), testing::Pointee(55));
 }
 
-auto stringReducer = [](auto &&str, auto &&num) { return std::move(str += " " + std::to_string(*num)); };
-auto stringInit = [](auto &&num) { return std::to_string(*num); };
+namespace
+{
+   auto stringReducer = [](auto&& str, auto&& num) { return std::move(str += " " + std::to_string(*num)); };
+   auto stringInit = [](auto&& num) { return std::to_string(*num); };
+}
 
 TEST(FILTERS_MOVE_ONLY_FINITE_STREAM, REDUCE_TO_STRING_EMPTY)
 {
