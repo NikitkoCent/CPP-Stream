@@ -8,15 +8,15 @@ enable_testing()
 
 find_package(Threads)
 
-add_executable(unittesting ${_cpp-stream_INCLUDE_DIR}/stream.h
-                           ${_cpp-stream_INCLUDE_DIR}/traits.h
-                           ${_cpp-stream_INCLUDE_DIR}/value_holder.h
-                           ${_cpp-stream_INCLUDE_DIR}/continuation.h
-                           ${_cpp-stream_INCLUDE_DIR}/operations.h
-                           ${_cpp-stream_INCLUDE_DIR}/detail/stream_base.h
-                           ${_cpp-stream_INCLUDE_DIR}/detail/traits_impl.h
-                           ${_cpp-stream_INCLUDE_DIR}/detail/stream_impl.h
-                           ${_cpp-stream_INCLUDE_DIR}/detail/continuation_impl.h
+add_executable(unittesting ${_cpp-stream_INCLUDE_DIR}/stream/stream.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/traits.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/value_holder.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/continuation.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/operations.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/detail/stream_base.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/detail/traits_impl.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/detail/stream_impl.h
+                           ${_cpp-stream_INCLUDE_DIR}/stream/detail/continuation_impl.h
                            stream_deduction_guides.cpp
                            filters_int_finite_stream.cpp
                            filters_int_infinite_stream.cpp

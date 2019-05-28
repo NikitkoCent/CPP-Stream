@@ -1,5 +1,5 @@
-#include <stream.h>
-#include <operations.h>
+#include <stream/stream.h>
+#include <stream/operations.h>
 #include <vector>
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>

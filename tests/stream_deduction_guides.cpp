@@ -1,4 +1,4 @@
-#include <stream.h>
+#include <stream/stream.h>
 #include <vector>
 #include <list>
 #include <initializer_list>

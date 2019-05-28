@@ -1,6 +1,6 @@
 #include "noisy.h"
-#include <stream.h>
-#include <operations.h>
+#include <stream/stream.h>
+#include <stream/operations.h>
 #include <vector>
 #include <sstream>
 #include <type_traits>
