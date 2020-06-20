@@ -27,7 +27,6 @@ jobs:
       - name: Build and collect code coverage
         run: |
           cd build
-        #  cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=OTHER -DGCOV_PATH=gcov-7 ..
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DGCOV_PATH=gcov-7 ..
           cmake --build .
           ctest -C Debug --output-on-failure
