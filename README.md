@@ -85,9 +85,9 @@ return v;
     * C++17-compatible compiler and STL
 * For running tests, you need:
     * [git](https://git-scm.com/downloads)
-    * [CMake](https://cmake.org/download/) >= v3.1
+    * [CMake](https://cmake.org/download/) >= v3.8.2
     * Additionally, if you want to measure code coverage, you need:
-        * compiler,q
+        * compiler,
         [gcov](https://en.wikipedia.org/wiki/Gcov)
         [, optional: [lcov](https://wiki.documentfoundation.org/Development/Lcov)]
         compatible with each other
