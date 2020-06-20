@@ -32,7 +32,7 @@ jobs:
       - name: Configure
         run: |
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov ..
 
       - name: Collect coverage
         run: cmake --build . --target collect_coverage
