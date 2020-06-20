@@ -159,3 +159,73 @@ jobs:
         run: |
           cd build
           ctest -C Debug --verbose
+
+  windows-server-2016_msvs-2017_tests:
+    name: "Tests; Windows Server 2016, MSVS 2017, Release+Debug"
+    # The type of runner that the job will run on
+    runs-on: windows-2016
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Configure
+        run: |
+          cd build
+          cmake ..
+
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake --build . --config Debug
+
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+      - name: Build (Release)
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose
+
+  windows-server-2019_msvs-2019_tests:
+    name: "Tests; Windows Server 2019, MSVS 2019, Release+Debug"
+    # The type of runner that the job will run on
+    runs-on: windows-2019
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Configure
+        run: |
+          cd build
+          cmake ..
+
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake --build . --config Debug
+
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+      - name: Build (Release)
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose
