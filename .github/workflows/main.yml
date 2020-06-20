@@ -10,7 +10,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  ubuntus-workflow:
+  ubuntu_gcc_code-coverage:
     # The type of runner that the job will run on
     runs-on: ubuntu-16.04
 
@@ -28,3 +28,11 @@ jobs:
         run: |
           echo Add other actions to build,
           echo test, and deploy your project.
+
+      - name: Configure
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov
+
+      - name: Collect coverage
+        run: cmake --build . --target collect_coverage
