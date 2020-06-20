@@ -9,18 +9,13 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # first job
-  ubuntu_gcc_code-coverage:
+  # GCC-7.5 code coverage
+  ubuntu_gcc-7.5_code-coverage:
     # The type of runner that the job will run on
     runs-on: ubuntu-16.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      #- name: Install dependencies
-      #  run: |
-      #    sudo apt-get install -y lcov
-      #    lcov --version
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
@@ -34,8 +29,72 @@ jobs:
       - name: Upload code coverage
         run: |
           curl --output .codecov.sh https://codecov.io/bash
-          bash ./.codecov.sh -Z -x 'gcov-7' -G "./tests" || echo 'Codecov did not collect coverage reports'
+          bash ./.codecov.sh -Z -x 'gcov-7' || echo 'Codecov did not collect coverage reports'
 
-      #- uses: codecov/codecov-action@v1
-      #  with:
-      #    fail_ci_if_error: true
+    # GCC-8.4 Debug
+    ubuntu_gcc-8.4_tests-debug:
+      # The type of runner that the job will run on
+      runs-on: ubuntu-latest
+
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v2
+
+        - name: Build and run tests
+          run: |
+            cd build
+            cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 ..
+            cmake --build .
+            ctest -C Debug --output-on-failure
+
+    # GCC-9.3 Release
+    ubuntu_gcc-9.3_tests-release:
+      # The type of runner that the job will run on
+      runs-on: ubuntu-latest
+
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v2
+
+        - name: Build and run tests
+          run: |
+            cd build
+            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
+            cmake --build .
+            ctest -C Release --output-on-failure
+
+    # Clang-8 Debug
+    ubuntu_clang-8_tests-debug:
+      # The type of runner that the job will run on
+      runs-on: ubuntu-latest
+
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v2
+
+        - name: Build and run tests
+          run: |
+            cd build
+            cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8 ..
+            cmake --build .
+            ctest -C Debug --output-on-failure
+
+    # Clang-9 Release
+    ubuntu_clang-9_tests-release:
+      # The type of runner that the job will run on
+      runs-on: ubuntu-latest
+
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      steps:
+        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+        - uses: actions/checkout@v2
+
+        - name: Build and run tests
+          run: |
+            cd build
+            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-9 -DCMAKE_CXX_COMPILER=clang++-9 ..
+            cmake --build .
+            ctest -C Release --output-on-failure
