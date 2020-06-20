@@ -9,32 +9,29 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  # first job
   ubuntu_gcc_code-coverage:
     # The type of runner that the job will run on
     runs-on: ubuntu-16.04
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Install dependencies
-        run: sudo apt-get install -y lcov
+      #- name: Install dependencies
+      #  run: |
+      #    sudo apt-get install -y lcov
+      #    lcov --version
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-
       - name: Build and collect coverage
         run: |
           cd build
-          ls -al /usr/bin
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov-7 ..
-          cmake --build . --target collect_coverage
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=OTHER -DGCOV_PATH=gcov-7 ..
+          cmake --build .
+          ctest -C Debug --output-on-failure
+          ls -al
+
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
