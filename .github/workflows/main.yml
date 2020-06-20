@@ -33,7 +33,6 @@ jobs:
 
       - name: Upload code coverage
         run: |
-          cd build
           curl --output .codecov.sh https://codecov.io/bash
           bash ./.codecov.sh -Z -x "gcov-7" -G "include/stream" || echo "Codecov did not collect coverage reports"
 
