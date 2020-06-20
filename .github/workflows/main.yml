@@ -53,7 +53,6 @@ jobs:
           cd build
           ctest -C Debug --verbose
 
-  # GCC-9.3 Release
   ubuntu_gcc-9-3_tests-release:
     name: "Tests; Ubuntu latest, GCC-9.3, Release"
     # The type of runner that the job will run on
@@ -75,7 +74,6 @@ jobs:
           cd build
           ctest -C Release --verbose
 
-  # Clang-8 Debug
   ubuntu_clang-8_tests-debug:
     name: "Tests; Ubuntu latest, Clang-8, Debug"
     # The type of runner that the job will run on
@@ -97,7 +95,6 @@ jobs:
           cd build
           ctest -C Debug --verbose
 
-  # Clang-9 Release
   ubuntu_clang-9_tests-release:
     name: "Tests; Ubuntu latest, Clang-9, Release"
     # The type of runner that the job will run on
