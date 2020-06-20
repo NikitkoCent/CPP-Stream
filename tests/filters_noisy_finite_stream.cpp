@@ -163,7 +163,7 @@ TEST(FILTERS_NOISY_FINITE_STREAM, MAP_GENERIC)
     ASSERT_EQ(Noisy::copyCount, 0);
     ASSERT_EQ(result.size(), 9U);
 
-    for (unsigned i = 0; i < 9; ++i)
+    for (int i = 0; i < 9; ++i)
     {
         ASSERT_EQ(result[i].value, (i + 1) * (i + 1));
     }

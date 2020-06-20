@@ -43,14 +43,14 @@ namespace stream
         inline auto skip(::std::size_t amount)
         {
             return makeContinuation<false>([amount](auto &&value, auto &&stream) mutable {
-                using Type = typename stream::StreamTraits<decltype(stream)>::RealType;
+                using RealType = typename stream::StreamTraits<decltype(stream)>::RealType;
 
                 if (amount > 0) {
                     --amount;
-                    return ::std::optional<Type>{::std::nullopt};
+                    return ::std::optional<RealType>{::std::nullopt};
                 }
 
-                return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
+                return ::std::optional<RealType>{::std::forward<decltype(value)>(value)};
             });
         }
 
@@ -59,10 +59,7 @@ namespace stream
         auto map(Transform &&transform)
         {
             return makeContinuation<false>([transform = ::std::forward<Transform>(transform)](auto &&value, auto &&) mutable {
-                using ReturnType = ::std::invoke_result_t<decltype(transform), decltype(::std::move(value.get()))>;
-                using Type = ValueHolder<ReturnType>;
-
-                return ::std::optional<Type>{transform(::std::move(value.get()))};
+                return ::std::optional{transform(::std::move(value.get()))};
             });
         }
 
@@ -70,16 +67,16 @@ namespace stream
         inline auto get(::std::size_t n)
         {
             return makeContinuation<true>([n](auto &&value, auto &&stream, bool &end) mutable {
-                using Type = typename stream::StreamTraits<decltype(stream)>::RealType;
+                using RealType = typename stream::StreamTraits<decltype(stream)>::RealType;
                 if (n > 0)
                 {
                     --n;
                     end = (n == 0);
-                    return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
+                    return ::std::optional<RealType>{::std::forward<decltype(value)>(value)};
                 }
 
                 end = true;
-                return ::std::optional<Type>{::std::nullopt};
+                return ::std::optional<RealType>{::std::nullopt};
             });
         }
 
@@ -88,14 +85,15 @@ namespace stream
         auto reduce(Identity &&identity, Accumulator &&accumulator)
         {
             return [f1 = ::std::forward<Identity>(identity), fn = ::std::forward<Accumulator>(accumulator)](auto &&stream) mutable {
-                using Type = detail::InvokeResultT<decltype(f1), decltype(::std::move(stream.getNext()->get()))>;
+                using StreamValueType = typename StreamTraits<decltype(stream)>::ValueType;
+                using ResultType = detail::InvokeResultT<decltype(f1), StreamValueType&&>;
 
                 if (stream.isEnd())
                 {
-                    return Type{};
+                    return ResultType{};
                 }
 
-                Type result;
+                ResultType result{};
                 while (!stream.isEnd())
                 {
                     auto initializer = stream.getNext();
@@ -175,9 +173,9 @@ namespace stream
         inline auto to_vector()
         {
             return [](auto &&stream) {
-                using Type = typename StreamTraits<decltype(stream)>::ValueType;
+                using ValueType = typename StreamTraits<decltype(stream)>::ValueType;
 
-                ::std::vector<Type> result;
+                ::std::vector<ValueType> result;
                 while (!stream.isEnd())
                 {
                     auto value = stream.getNext();
@@ -196,13 +194,13 @@ namespace stream
         auto filter(Predicate &&predicate)
         {
             return makeContinuation<false>([predicate = ::std::forward<Predicate>(predicate)](auto &&value, auto &&stream) {
-                using Type = typename StreamTraits<decltype(stream)>::RealType;
-                if (predicate(static_cast<const Type&>(value).get()))
+                using RealType = typename StreamTraits<decltype(stream)>::RealType;
+                if (predicate(static_cast<const RealType&>(value).get()))
                 {
-                    return ::std::optional<Type>{::std::forward<decltype(value)>(value)};
+                    return ::std::optional<RealType>{::std::forward<decltype(value)>(value)};
                 }
 
-                return ::std::optional<Type>{::std::nullopt};
+                return ::std::optional<RealType>{::std::nullopt};
             });
         }
 
@@ -216,36 +214,36 @@ namespace stream
             template<typename Stream, ::std::enable_if_t<StreamTraits<Stream>::IsFinite>* = nullptr>
             auto createContinuation()
             {
-                using Type = typename StreamTraits<Stream>::ValueType;
+                using ValueType = typename StreamTraits<Stream>::ValueType;
 
-                ::std::size_t n = this->n;
-                return makeContinuation<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&stream) mutable {
+                ::std::size_t localN = this->n;
+                return makeContinuation<false>([localN, vec = ::std::vector<ValueType>{}](auto &&value, auto &&stream) mutable {
                     vec.emplace_back(::std::move(value.get()));
 
-                    if ((vec.size() == n) || stream.isEnd())
+                    if ((vec.size() == localN) || stream.isEnd())
                     {
-                        return ::std::optional<::std::vector<Type>>(::std::move(vec));
+                        return ::std::optional<::std::vector<ValueType>>(::std::move(vec));
                     }
 
-                    return ::std::optional<::std::vector<Type>>(::std::nullopt);
+                    return ::std::optional<::std::vector<ValueType>>(::std::nullopt);
                 });
             }
 
             template<typename Stream, ::std::enable_if_t<!StreamTraits<Stream>::IsFinite>* = nullptr>
             auto createContinuation()
             {
-                using Type = typename StreamTraits<Stream>::ValueType;
+                using ValueType = typename StreamTraits<Stream>::ValueType;
 
-                ::std::size_t n = this->n;
-                return makeContinuation<false>([n, vec = ::std::vector<Type>{}](auto &&value, auto &&) mutable {
+                ::std::size_t localN = this->n;
+                return makeContinuation<false>([localN, vec = ::std::vector<ValueType>{}](auto &&value, auto &&) mutable {
                     vec.emplace_back(::std::move(value.get()));
 
-                    if (vec.size() == n)
+                    if (vec.size() == localN)
                     {
-                        return ::std::optional<::std::vector<Type>>(::std::move(vec));
+                        return ::std::optional<::std::vector<ValueType>>(::std::move(vec));
                     }
 
-                    return ::std::optional<::std::vector<Type>>(::std::nullopt);
+                    return ::std::optional<::std::vector<ValueType>>(::std::nullopt);
                 });
             }
 
