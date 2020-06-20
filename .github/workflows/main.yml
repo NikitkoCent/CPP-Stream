@@ -24,14 +24,19 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build and collect coverage
+      - name: Build and collect code coverage
         run: |
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=OTHER -DGCOV_PATH=gcov-7 ..
           cmake --build .
           ctest -C Debug --output-on-failure
-          ls -al
 
-      - uses: codecov/codecov-action@v1
-        with:
-          fail_ci_if_error: true
+      - name: Upload code coverage
+        run: |
+          cd build
+          curl --output .codecov.sh https://codecov.io/bash
+          bash ./.codecov.sh -x "gcov-7" || echo "Codecov did not collect coverage reports"
+
+      #- uses: codecov/codecov-action@v1
+      #  with:
+      #    fail_ci_if_error: true
