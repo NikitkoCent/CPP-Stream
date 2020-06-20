@@ -32,10 +32,8 @@ jobs:
           echo Add other actions to build,
           echo test, and deploy your project.
 
-      - name: Configure
+      - name: Build and collect coverage
         run: |
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov ..
-
-      - name: Collect coverage
-        run: cmake --build . --target collect_coverage
+          cmake --build . --target collect_coverage
