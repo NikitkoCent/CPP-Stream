@@ -42,11 +42,15 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build and run tests
+      - name: Build
         run: |
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 ..
           cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
           ctest -C Debug --verbose
 
   # GCC-9.3 Release
@@ -60,11 +64,15 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build and run tests
+      - name: Build
         run: |
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
           cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
           ctest -C Release --verbose
 
   # Clang-8 Debug
@@ -78,11 +86,15 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build and run tests
+      - name: Build
         run: |
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8 ..
           cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
           ctest -C Debug --verbose
 
   # Clang-9 Release
@@ -96,9 +108,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build and run tests
+      - name: Build
         run: |
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-9 -DCMAKE_CXX_COMPILER=clang++-9 ..
           cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
           ctest -C Release --verbose
