@@ -47,7 +47,7 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 ..
           cmake --build .
-          ctest -C Debug --output-on-failure
+          ctest -C Debug --verbose
 
   # GCC-9.3 Release
   ubuntu_gcc-9-3_tests-release:
@@ -65,7 +65,7 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
           cmake --build .
-          ctest -C Release --output-on-failure
+          ctest -C Release --verbose
 
   # Clang-8 Debug
   ubuntu_clang-8_tests-debug:
@@ -83,7 +83,7 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8 ..
           cmake --build .
-          ctest -C Debug --output-on-failure
+          ctest -C Debug --verbose
 
   # Clang-9 Release
   ubuntu_clang-9_tests-release:
@@ -101,4 +101,4 @@ jobs:
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-9 -DCMAKE_CXX_COMPILER=clang++-9 ..
           cmake --build .
-          ctest -C Release --output-on-failure
+          ctest -C Release --verbose
