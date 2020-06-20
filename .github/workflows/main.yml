@@ -36,5 +36,5 @@ jobs:
         run: |
           cd build
           ls -al /usr/bin
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7.5.0 -DCMAKE_CXX_COMPILER=g++-7.5.0 -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov ..
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov-7 ..
           cmake --build . --target collect_coverage
