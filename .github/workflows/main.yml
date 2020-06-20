@@ -34,7 +34,7 @@ jobs:
       - name: Upload code coverage
         run: |
           curl --output .codecov.sh https://codecov.io/bash
-          bash ./.codecov.sh -Z -x 'gcov-7' || echo 'Codecov did not collect coverage reports'
+          bash ./.codecov.sh -Z -x 'gcov-7' -G "./tests" || echo 'Codecov did not collect coverage reports'
 
       #- uses: codecov/codecov-action@v1
       #  with:
