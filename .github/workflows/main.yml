@@ -27,7 +27,7 @@ jobs:
       - name: Build and collect code coverage
         run: |
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DGCOV_PATH=gcov-7 ..
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=OTHER -DGCOV_PATH=gcov-7 ..
           cmake --build .
           ctest -C Debug --output-on-failure
 
@@ -35,7 +35,7 @@ jobs:
         run: |
           cd build
           curl --output .codecov.sh https://codecov.io/bash
-          bash ./.codecov.sh -Z -v -x "gcov-7" -s ../build || echo "Codecov did not collect coverage reports"
+          bash ./.codecov.sh -Z -x "gcov-7" -s ../build || echo "Codecov did not collect coverage reports"
 
       #- uses: codecov/codecov-action@v1
       #  with:
