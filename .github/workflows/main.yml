@@ -35,5 +35,5 @@ jobs:
       - name: Build and collect coverage
         run: |
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov ..
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7.5.0 -DCMAKE_CXX_COMPILER=g++-7.5.0 -DCOLLECT_CODE_COVERAGE=LCOV -DGCOV_PATH=gcov ..
           cmake --build . --target collect_coverage
