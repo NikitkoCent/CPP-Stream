@@ -83,7 +83,10 @@ Output:
 
 ## Requirements
 * Using the library:
-    * C++17-compatible compiler and STL
+    * C++17-compatible compiler and STL. Tested with:
+        * `GCC 7.5`, `GCC 8.4`, `GCC 9.3`;
+        * `Clang 8`, `Clang 9`;
+        * `MSVC 19.16.27041.0 (MSVS 2017)`, `MSVC 19.26.28806.0 (MSVS 2019)`.
 * For running tests, you need:
     * [git](https://git-scm.com/downloads)
     * [CMake](https://cmake.org/download/) >= v3.8.2
