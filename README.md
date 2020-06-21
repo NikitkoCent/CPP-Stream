@@ -1,4 +1,4 @@
-# cpp-stream
+# cpp-stream [![GitHub release (latest by date)](https://img.shields.io/github/v/release/NikitkoCent/cpp-stream)](https://github.com/NikitkoCent/cpp-stream/releases/latest) [![Actions Status](https://github.com/NikitkoCent/cpp-stream/workflows/CI/badge.svg)](https://github.com/NikitkoCent/cpp-stream/actions) [![codecov](https://codecov.io/gh/NikitkoCent/cpp-stream/branch/master/graph/badge.svg)](https://codecov.io/gh/NikitkoCent/cpp-stream) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 C++17-compatible imitation of [Java 8 Stream API](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html).
 Elements are processed lazily and with minimum overhead.
 
