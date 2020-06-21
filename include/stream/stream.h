@@ -22,7 +22,8 @@ namespace stream
     };
 
 
-    namespace detail
+    // CTAD SFINAE deduction helper
+    namespace detail::ctad
     {
         template<typename... Ts>
         struct DeductorParams {};
@@ -43,8 +44,8 @@ namespace stream
                                       >
                        >
         {
-            using first_type = typename ContainerTraits<Container>::ValueType;
-            using second_type = RemoveCVRefT<Container>;
+            using first_type = typename detail::ContainerTraits<Container>::ValueType;
+            using second_type = detail::RemoveCVRefT<Container>;
         };
 
         // Stream(T, Ts...) -> Stream<T>
@@ -54,8 +55,8 @@ namespace stream
                          FakeTForMinPriority
                        >
         {
-            using first_type = RemoveCVRefT<T>;
-            using second_type = ::std::vector< RemoveCVRefT<T> >;
+            using first_type = detail::RemoveCVRefT<T>;
+            using second_type = ::std::vector< detail::RemoveCVRefT<T> >;
         };
 
         // Stream(Container&) -> Stream<T, const Container&>
@@ -71,7 +72,7 @@ namespace stream
                                       >
                        >
         {
-            using first_type = typename ContainerTraits<Container>::ValueType;
+            using first_type = typename detail::ContainerTraits<Container>::ValueType;
             using second_type = ::std::add_lvalue_reference_t< ::std::add_const_t< ::std::remove_reference_t<Container> > >;
         };
 
@@ -85,7 +86,7 @@ namespace stream
                                       >
                        >
         {
-            using first_type = typename GeneratorTraits<Generator>::ValueType;
+            using first_type = typename detail::GeneratorTraits<Generator>::ValueType;
             using second_type = ::std::remove_reference_t<Generator>;
         };
 
@@ -99,16 +100,16 @@ namespace stream
                                       >
                        >
         {
-            using first_type = typename RangeTraits<Iterator1>::ValueType;
-            using second_type = RemoveCRefT<Iterator1>;
+            using first_type = typename detail::RangeTraits<Iterator1>::ValueType;
+            using second_type = detail::RemoveCRefT<Iterator1>;
         };
 
 
         template<typename... Ts>
-        using Deductor1stT = typename Deductor< DeductorParams<Ts...> >::first_type;
+        using DeductorT1 = typename Deductor< DeductorParams<Ts...> >::first_type;
 
         template<typename... Ts>
-        using Deductor2ndT = typename Deductor< DeductorParams<Ts...> >::second_type;
+        using DeductorT2 = typename Deductor< DeductorParams<Ts...> >::second_type;
     }
 
 
@@ -116,7 +117,7 @@ namespace stream
     Stream(::std::initializer_list<T>) -> Stream<T>;
 
     template<typename T, typename... Ts>
-    Stream(T&&, Ts&&...) -> Stream< detail::Deductor1stT<T&&, Ts&&...>, detail::Deductor2ndT<T&&, Ts&&...> >;
+    Stream(T&&, Ts&&...) -> Stream< detail::ctad::DeductorT1<T&&, Ts&&...>, detail::ctad::DeductorT2<T&&, Ts&&...> >;
 }
 
 #endif //CPP_STREAM_STREAM_H
