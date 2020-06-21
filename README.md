@@ -35,7 +35,7 @@ int main()
         "food"
     };
 
-    // no copying or moving, string is stored via reference
+    // no copying or moving, strings are stored via reference
     stream::Stream(strings)
     | ops::filter([](const char *str) { // select only strings started with 'F' or 'f'
         return (str[0] == 'f' || str[0] == 'F');
@@ -44,7 +44,7 @@ int main()
         (void)std::transform(str.begin(), str.end(), str.begin(), [](unsigned char ch) { return std::toupper(ch); });
         return str;
       }) // still nothing will be evaluated
-    | ops::print_to(std::cout); // there is terminal operation - causes evaluating everything
+    | ops::print_to(std::cout); // there is the terminal operation - causes evaluating everything
 
     return 0;
 }
@@ -52,33 +52,34 @@ int main()
 Output:
 > FRED'S FRIENDS FRIED FRITOS FOR FRIDAYS FOOD
 
-## Supported terminal operations
-* `print_to(ostream)` - prints all elements of the stream to a given output stream `ostream`;
-* `reduce(identityFn, accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
-```cpp
-stream::Stream s(...);
-auto v = identityFn(s.getNext());
-while (!s.isEnd())
-    v = accumulatorFn(v, s.getNext());
-return v;
-```
-* `reduce(accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
-```cpp
-stream::Stream s(...);
-auto v = s.getNext();
-while (!s.isEnd())
-    v = accumulatorFn(v, s.getNext());
-return v;
-```
-* `nth(n)` - returns `n`th element of the stream;
-* `to_vector()` - moves all elements of the origin stream to a `std::vector`.
+## Features
+* Supported terminal operations:
+    * `print_to(ostream)` - prints all elements of the stream to a given output stream `ostream`;
+    * `reduce(identityFn, accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
+        ```cpp
+        stream::Stream s(...);
+        auto v = identityFn(s.getNext());
+        while (!s.isEnd())
+            v = accumulatorFn(v, s.getNext());
+        return v;
+        ```
+    * `reduce(accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
+        ```cpp
+        stream::Stream s(...);
+        auto v = s.getNext();
+        while (!s.isEnd())
+            v = accumulatorFn(v, s.getNext());
+        return v;
+        ```
+    * `nth(n)` - returns `n`th element of the stream;
+    * `to_vector()` - moves all elements of the origin stream to a `std::vector`.
 
-## Supported non terminal operations
-* `skip(n)` - skips n elements of the stream;
-* `get(n)` - takes only n first elements from the stream;
-* `map(mapFn)` - creates a new stream of results of applying the given functor `mapFn` to every element of the given stream;
-* `filter(predicateFn)` - leaves only elements to which applying `predicateFn` functor returns true;
-* `group(n)` - creates a new stream of `std::vector`s with `n` elements of the origin stream.
+* Supported non terminal operations:
+    * `skip(n)` - skips n elements of the stream;
+    * `get(n)` - takes only n first elements from the stream;
+    * `map(mapFn)` - creates a new stream of results of applying the given functor `mapFn` to every element of the given stream;
+    * `filter(predicateFn)` - leaves only elements to which applying `predicateFn` functor returns true;
+    * `group(n)` - creates a new stream of `std::vector`s with `n` elements of the origin stream.
 
 ## Requirements
 * Using the library:
