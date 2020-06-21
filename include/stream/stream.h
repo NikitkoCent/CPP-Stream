@@ -23,13 +23,8 @@ namespace stream
 
 
     // Container guides
-    template<typename Container,
-             typename ::std::enable_if_t< !detail::IsGeneratorV<Container&&> >* = nullptr,
-             typename ::std::enable_if_t<  detail::IsContainerV<Container&&> >* = nullptr,
-             typename ::std::enable_if_t<  ::std::is_rvalue_reference_v<Container&&> >* = nullptr,
-             typename ::std::enable_if_t< !::std::is_const_v< ::std::remove_reference_t<Container&&> > >* = nullptr
-    >
-    Stream(Container&&) -> Stream< typename ContainerTraits<Container&&>::ValueType, detail::RemoveCVRefT<Container&&> >;
+    template<typename Container>
+    Stream(Container&&) -> Stream<typename ContainerTraits<Container>::ValueType, ::std::remove_reference_t<Container>>;
 
     template<typename T>
     Stream(::std::initializer_list<T>) -> Stream<T>;
@@ -38,26 +33,26 @@ namespace stream
     Stream(T&&, Ts&&...) -> Stream<::std::remove_reference_t<T>>;
 
 
-    // Container ref guide
-    template<typename Container,
-             typename ::std::enable_if_t< !detail::IsGeneratorV<Container&&> >* = nullptr,
-             typename ::std::enable_if_t<  detail::IsContainerV<Container&&> >* = nullptr,
-             typename ::std::enable_if_t<  ::std::is_lvalue_reference_v<Container&&> >* = nullptr
-    >
-    Stream(Container&&) -> Stream< typename ContainerTraits<Container&&>::ValueType, const Container& >;
+    // Container cref guides
+    template<typename Container>
+    Stream(Container&) -> Stream<typename ContainerTraits<Container>::ValueType, const Container&>;
+
+    template<typename Container>
+    Stream(const Container&) -> Stream<typename ContainerTraits<Container>::ValueType, const Container&>;
+
+    template<typename Container>
+    Stream(const Container&&) -> Stream<typename ContainerTraits<Container>::ValueType, const Container&>;
 
 
     // Generator guides
-    template<typename Generator,
-             typename ::std::enable_if_t<  detail::IsGeneratorV<Generator&&> >* = nullptr,
-             typename ::std::enable_if_t< !detail::IsContainerV<Generator&&> >* = nullptr
-    >
-    Stream(Generator&&) -> Stream< typename GeneratorTraits<Generator&&>::ValueType, ::std::remove_reference_t<Generator> >;
+    template<typename Generator>
+    Stream(Generator&&) -> Stream<typename GeneratorTraits<Generator>::ValueType, ::std::remove_reference_t<Generator>>;
 
 
     // Range guides
     template<typename Iterator1, typename Iterator2>
-    Stream(Iterator1, Iterator2) -> Stream< typename RangeTraits<Iterator1>::ValueType, Iterator1 >;
+    Stream(Iterator1&&, Iterator2&&) -> Stream<typename RangeTraits<Iterator1>::ValueType,
+                                               RemoveCRefT<Iterator1>>;
 }
 
 #endif //CPP_STREAM_STREAM_H
