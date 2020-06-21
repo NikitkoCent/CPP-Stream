@@ -13,5 +13,6 @@ set(cpp-stream_INCLUDE_DIR ${_cpp-stream_INCLUDE_DIR} PARENT_SCOPE)
 
 include_directories(${_cpp-stream_INCLUDE_DIR})
 
+# Enable testing for the project
+enable_testing()
 add_subdirectory(tests)
-

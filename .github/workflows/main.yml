@@ -1,0 +1,231 @@
+name: "CI"
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+  pull_request:
+    branches: [master]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  ubuntu-16-04_gcc-7-5_code-coverage:
+    name: "Code coverage; Ubuntu 16.04, GCC-7.5"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-16.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build and collect code coverage
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DCOLLECT_CODE_COVERAGE=OTHER -DGCOV_PATH=gcov-7 ..
+          cmake --build .
+          ctest -C Debug --output-on-failure
+
+      - name: Upload code coverage
+        run: |
+          curl --output .codecov.sh https://codecov.io/bash
+          bash ./.codecov.sh -Z -x 'gcov-7' || echo 'Codecov did not collect coverage reports'
+
+  ubuntu-latest_gcc-8-4_tests-debug:
+    name: "Tests; Ubuntu latest, GCC-8.4, Debug"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 ..
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+  ubuntu-latest_gcc-9-3_tests-release:
+    name: "Tests; Ubuntu latest, GCC-9.3, Release"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-9 -DCMAKE_CXX_COMPILER=g++-9 ..
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C Release --verbose
+
+  ubuntu-latest_clang-8_tests-debug:
+    name: "Tests; Ubuntu latest, Clang-8, Debug"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-8 -DCMAKE_CXX_COMPILER=clang++-8 ..
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+  ubuntu-latest_clang-9_tests-release:
+    name: "Tests; Ubuntu latest, Clang-9, Release"
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-9 -DCMAKE_CXX_COMPILER=clang++-9 ..
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C Release --verbose
+
+  macos-latest_clang_tests-release:
+    name: "Tests; macOS latest, Clang, Release"
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build
+          clang++ --version
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C Release --verbose
+
+  macos-latest_clang_tests-debug:
+    name: "Tests; macOS latest, Clang, Debug"
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Build
+        run: |
+          cd build
+          clang++ --version
+          cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+  windows-server-2016_msvs-2017_tests:
+    name: "Tests; Windows Server 2016, MSVS 2017, Release+Debug"
+    # The type of runner that the job will run on
+    runs-on: windows-2016
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Configure
+        run: |
+          cd build
+          cmake ..
+
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake --build . --config Debug
+
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+      - name: Build (Release)
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose
+
+  windows-server-2019_msvs-2019_tests:
+    name: "Tests; Windows Server 2019, MSVS 2019, Release+Debug"
+    # The type of runner that the job will run on
+    runs-on: windows-2019
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Configure
+        run: |
+          cd build
+          cmake ..
+
+      - name: Build (Debug)
+        run: |
+          cd build
+          cmake --build . --config Debug
+
+      - name: Run tests (Debug)
+        run: |
+          cd build
+          ctest -C Debug --verbose
+
+      - name: Build (Release)
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      - name: Run tests (Release)
+        run: |
+          cd build
+          ctest -C Release --verbose

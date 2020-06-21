@@ -282,8 +282,10 @@ namespace stream
                     {
                         return end | oldStream.isEnd();
                     }
-
-                    return end;
+                    else
+                    {
+                        return end;
+                    }
                 }
                 else
                 {

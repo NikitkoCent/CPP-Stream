@@ -1,4 +1,4 @@
-# cpp-stream
+# cpp-stream [![GitHub release (latest by date)](https://img.shields.io/github/v/release/NikitkoCent/cpp-stream)](https://github.com/NikitkoCent/cpp-stream/releases/latest) [![Actions Status](https://github.com/NikitkoCent/cpp-stream/workflows/CI/badge.svg)](https://github.com/NikitkoCent/cpp-stream/actions) [![codecov](https://codecov.io/gh/NikitkoCent/cpp-stream/branch/master/graph/badge.svg)](https://codecov.io/gh/NikitkoCent/cpp-stream) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 C++17-compatible imitation of [Java 8 Stream API](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html).
 Elements are processed lazily and with minimum overhead.
 
@@ -35,7 +35,7 @@ int main()
         "food"
     };
 
-    // no copying or moving, string is stored via reference
+    // no copying or moving, strings are stored via reference
     stream::Stream(strings)
     | ops::filter([](const char *str) { // select only strings started with 'F' or 'f'
         return (str[0] == 'f' || str[0] == 'F');
@@ -44,7 +44,7 @@ int main()
         (void)std::transform(str.begin(), str.end(), str.begin(), [](unsigned char ch) { return std::toupper(ch); });
         return str;
       }) // still nothing will be evaluated
-    | ops::print_to(std::cout); // there is terminal operation - causes evaluating everything
+    | ops::print_to(std::cout); // there is the terminal operation - causes evaluating everything
 
     return 0;
 }
@@ -52,42 +52,46 @@ int main()
 Output:
 > FRED'S FRIENDS FRIED FRITOS FOR FRIDAYS FOOD
 
-## Supported terminal operations
-* `print_to(ostream)` - prints all elements of the stream to a given output stream `ostream`;
-* `reduce(identityFn, accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
-```cpp
-stream::Stream s(...);
-auto v = identityFn(s.getNext());
-while (!s.isEnd())
-    v = accumulatorFn(v, s.getNext());
-return v;
-```
-* `reduce(accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
-```cpp
-stream::Stream s(...);
-auto v = s.getNext();
-while (!s.isEnd())
-    v = accumulatorFn(v, s.getNext());
-return v;
-```
-* `nth(n)` - returns `n`th element of the stream;
-* `to_vector()` - moves all elements of the origin stream to a `std::vector`.
+## Features
+* Supported terminal operations:
+    * `print_to(ostream)` - prints all elements of the stream to a given output stream `ostream`;
+    * `reduce(identityFn, accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
+        ```cpp
+        stream::Stream s(...);
+        auto v = identityFn(s.getNext());
+        while (!s.isEnd())
+            v = accumulatorFn(v, s.getNext());
+        return v;
+        ```
+    * `reduce(accumulatorFn)` - reduces all elements of the stream to 1 similar to the following pseudo-code:
+        ```cpp
+        stream::Stream s(...);
+        auto v = s.getNext();
+        while (!s.isEnd())
+            v = accumulatorFn(v, s.getNext());
+        return v;
+        ```
+    * `nth(n)` - returns `n`th element of the stream;
+    * `to_vector()` - moves all elements of the origin stream to a `std::vector`.
 
-## Supported non terminal operations
-* `skip(n)` - skips n elements of the stream;
-* `get(n)` - takes only n first elements from the stream;
-* `map(mapFn)` - creates a new stream of results of applying the given functor `mapFn` to every element of the given stream;
-* `filter(predicateFn)` - leaves only elements to which applying `predicateFn` functor returns true;
-* `group(n)` - creates a new stream of `std::vector`s with `n` elements of the origin stream.
+* Supported non terminal operations:
+    * `skip(n)` - skips n elements of the stream;
+    * `get(n)` - takes only n first elements from the stream;
+    * `map(mapFn)` - creates a new stream of results of applying the given functor `mapFn` to every element of the given stream;
+    * `filter(predicateFn)` - leaves only elements to which applying `predicateFn` functor returns true;
+    * `group(n)` - creates a new stream of `std::vector`s with `n` elements of the origin stream.
 
 ## Requirements
 * Using the library:
-    * C++17-compatible compiler and STL
+    * C++17-compatible compiler and STL. Tested with:
+        * `GCC 7.5`, `GCC 8.4`, `GCC 9.3`;
+        * `Clang 8`, `Clang 9`;
+        * `MSVC 19.16.27041.0 (MSVS 2017)`, `MSVC 19.26.28806.0 (MSVS 2019)`.
 * For running tests, you need:
     * [git](https://git-scm.com/downloads)
-    * [CMake](https://cmake.org/download/) >= v3.1
+    * [CMake](https://cmake.org/download/) >= v3.8.2
     * Additionally, if you want to measure code coverage, you need:
-        * compiler,q
+        * compiler,
         [gcov](https://en.wikipedia.org/wiki/Gcov)
         [, optional: [lcov](https://wiki.documentfoundation.org/Development/Lcov)]
         compatible with each other
